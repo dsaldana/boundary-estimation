@@ -1,14 +1,3 @@
-from sympy import *
-from sympy import init_printing
-import sympy as sp
-import math
-
-import pylab
-import numpy as np
-import matplotlib.pylab as plt
-from matplotlib import cm
-from mpl_toolkits.mplot3d import Axes3D
-
 from anomaly_common import *
 
 

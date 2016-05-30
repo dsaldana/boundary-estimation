@@ -33,12 +33,14 @@ class Estimator(object):
         self.qx = np.dot(X.T, xx)
         self.qy = np.dot(X.T, yy)
 
-        # self.bx = np.dot(self.P, self.qx)
-        # self.by = np.dot(self.P, self.qy)
-
         # Standard deviation
-        cycle_lin_s, e = self.get_bias(t_path, s_path, xx, yy)
-        self.std = math.sqrt(1. / len(e)) * sum(e)
+        estimation_x, estimation_y = self.get_estimation(t_path, s_path)  # Estimator \mu
+        ex = np.array(estimation_x) - np.array(xx)  # error x
+        ey = np.array(estimation_y) - np.array(yy)  # error y
+        e = np.sqrt(sum(ex ** 2) + sum(ey ** 2))
+
+        # cycle_lin_s, e = self.get_bias(t_path, s_path, xx, yy)
+        self.std = math.sqrt(1. / len(t_path)) * (e)
 
 
         # Bx = np.array(xx).T
@@ -100,29 +102,25 @@ class Estimator(object):
         # Error
         ex = np.array(estimation_x) - np.array(points_xx)
         ey = np.array(estimation_y) - np.array(points_yy)
+
         e = np.sqrt(ex ** 2 + ey ** 2)
 
         return cycle_lin_s, e
-
-
-        # # Path
-        # ls_pathx = [lfx(ti, thi) for ti, thi in zip(time, atheta)]
-        # ls_pathy = [lfy(ti, thi) for ti, thi in zip(time, atheta)]
 
     def get_variance(self, t0, lin_s):
         """
         Variance for the estimation. Given a time value, it returns
         the variance at every point s of lins.
-        :param t0:
-        :param lin_s:
+        :param t0: time
+        :param lin_s: lin space for s.
         """
-        std = 1  #TODO Compute iterative variance
+        std2 = self.std ** 2  # TODO Compute iterative variance
 
         epx = []
 
         for si in lin_s:
             xe = np.array([hi.subs(t, t0).subs(theta, si) for hi in self.h], dtype=np.float32)
-            epxi = std * np.sqrt(np.dot(np.dot(xe.T, self.P), xe))
+            epxi = std2 * np.sqrt(np.dot(np.dot(xe.T, self.P), xe))
             epx.append(epxi)
         return epx
 
@@ -159,10 +157,16 @@ N = 1
 estimator = Estimator(N, M)
 
 estimator.initial_estimation(time, atheta, xx, yy)
+print estimator.std
 
 x1, y1 = estimator.get_estimation_t(100, np.linspace(0, 2 * math.pi, 100))
-plt.plot(x1, y1)
-plt.show()
+# plt.plot(x1, y1)
+
+
+
+
+
+# plt.show()
 
 # ## Test iterative
 # estimator2 = Estimator(N, M)
@@ -207,8 +211,26 @@ plt.show()
 # plt.show()
 
 
-# lin_s0 = np.linspace(0, 2 * math.pi, 20)
-# var = estimator.get_variance(time[-1], lin_s0)
-#
+lin_s0 = np.linspace(0, 2 * math.pi, 100)
+var_s = estimator.get_variance(time[-1], lin_s0)
+
 # plt.plot(lin_s0, var, 'o')
 # plt.show()
+
+
+
+#plt.plot(x1, y1,  label='$\gamma$')  # Real
+plt.plot(x1, y1, 'y', linewidth=2, label='$\hat\gamma$')  #Estimation
+
+plt.legend()
+
+# Uncertainty
+fig = plt.gcf()
+
+for xi, yi, epi in zip(x1, y1, var_s):
+    circle1=plt.Circle((xi,yi), 2*math.sqrt(epi), color='g')
+    fig.gca().add_artist(circle1)
+
+# Last robot location
+plt.plot(xx[-1], yy[-1], 'rv')
+plt.show()
