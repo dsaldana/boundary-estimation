@@ -73,8 +73,8 @@ class Agent:
         self.x = nx[0]
         self.y = ny[0]
 
-        self.traj_x.append(nx)
-        self.traj_y.append(ny)
+        self.traj_x.append(nx[0])
+        self.traj_y.append(ny[0])
 
 
 #######################################
@@ -91,16 +91,33 @@ boundary0, boundary1 = boundaries[0], boundaries[1]
 iloc = np.random.randint(0, len(boundary0), N)
 agents = [Agent(boundary1[i - 1], boundary0[i]) for i in iloc]
 
+# bx, by = boundary1.T
+# plt.plot(bx, by)
 
+# move the robots with constant velocity
+for boundary in boundaries[2:]:
+    for a in agents:
+        a.move_on_boundary(boundary, vel)
 
-bx, by = boundary1.T
+bx, by = boundaries[-1].T
 plt.plot(bx, by)
 
-for a in agents:
-    plt.plot(a.x, a.y, 'o')
+# for a in agents:
+#     plt.plot(a.traj_x, a.traj_y)
 
-    a.move_on_boundary(boundaries[2], vel)
 
-    plt.plot(a.x, a.y, 'v')
+tail = 10
+plt.ion()
+
+for i in range(tail+1, len(boundaries)):
+    plt.clf()
+    bx, by = boundaries[i].T
+    plt.plot(bx, by)
+
+    for a in agents:
+
+        plt.plot(a.traj_x[i - tail:i], a.traj_y[i - tail:i], '.-')
+    plt.draw()
+    plt.pause(0.5)
 
 plt.show()
