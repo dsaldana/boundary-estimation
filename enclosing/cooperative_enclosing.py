@@ -1,5 +1,7 @@
 import numpy as np
 import math
+import random
+
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString, Polygon, Point
 
@@ -52,8 +54,13 @@ class Agent:
         ## select from intersected points
         p1, p2 = np.array(intersection[0].xy), np.array(intersection[1].xy)
 
+        # distance to the second last point
+        # d1 = math.atan2((p1[1] - self.traj_y[-2]), (p1[0] - self.traj_x[-2]))
+        # d2 = math.atan2((p2[1] - self.traj_y[-2]), (p2[0] - self.traj_x[-2]))
+        # r = p1 if d1 > d2 else p2
+        # nx, ny = r
         a1 = math.atan2((p1[1] - self.traj_y[-1]), (p1[0] - self.traj_x[-1]))
-        a2 = math.atan2((p2[1] - self.traj_y[1]), (p2[0] - self.traj_x[-1]))
+        a2 = math.atan2((p2[1] - self.traj_y[-1]), (p2[0] - self.traj_x[-1]))
 
         # path angle
         a = math.atan2(self.traj_y[-1] - self.traj_y[-2],
@@ -67,7 +74,6 @@ class Agent:
         d2 = d2 if d2 < math.pi else abs(d2 - 2 * math.pi)
 
         r = intersection[0] if d1 < d2 else intersection[1]
-
         nx, ny = r.xy
 
         self.x = nx[0]
@@ -84,7 +90,7 @@ boundaries = boundaries_on_time()
 ############ Initial conditions ###############
 # Number of robots
 N = 3
-vel = .3
+vel = .1
 
 ## Creating agents
 boundary0, boundary1 = boundaries[0], boundaries[1]
@@ -97,6 +103,7 @@ agents = [Agent(boundary1[i - 1], boundary0[i]) for i in iloc]
 # move the robots with constant velocity
 for boundary in boundaries[2:]:
     for a in agents:
+        # vel = .3 * random.random() + .1
         a.move_on_boundary(boundary, vel)
 
 bx, by = boundaries[-1].T
@@ -106,17 +113,17 @@ plt.plot(bx, by)
 #     plt.plot(a.traj_x, a.traj_y)
 
 
-tail = 10
+tail = 40
 plt.ion()
 
-for i in range(tail+1, len(boundaries)):
+for i in range(tail + 1, len(boundaries)):
     plt.clf()
     bx, by = boundaries[i].T
     plt.plot(bx, by)
 
     for a in agents:
-
-        plt.plot(a.traj_x[i - tail:i], a.traj_y[i - tail:i], '.-')
+        plt.plot(a.traj_x[i - tail:i + 1], a.traj_y[i - tail:i + 1], '.-')
+        plt.plot(a.traj_x[i], a.traj_y[i], 'o')
     plt.draw()
     plt.pause(0.5)
 
