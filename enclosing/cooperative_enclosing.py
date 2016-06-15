@@ -7,7 +7,7 @@ from shapely.geometry import LineString, Polygon, Point
 
 ### Generate
 from enclosing.path_joiner import perpendicular_line, side_of_line
-from enclosing.s_estimator import identify_cut
+from enclosing.s_estimator import identify_cut, compute_intersection
 
 
 def boundaries_on_time(t_steps=500):
@@ -127,13 +127,15 @@ plt.plot(bx, by, '--')
 # polyline for robot 0
 polyset = [(agents[0].traj_x, agents[0].traj_y)]
 
-for i in range(1, N+1):
+for i in range(1, N + 1):
     a = agents[i % N]
     # Trajectory for robot i
     tx, ty = a.traj_x, a.traj_y
-
+    # Last points of the trajectory
+    lp1 = (tx[-1], ty[-1])
+    lp2 = (tx[-2], ty[-2])
     # draw debug
-    p1, p2 = perpendicular_line((tx[-1], ty[-1]), (tx[-2], ty[-2]), ddd=1000000)
+    p1, p2 = perpendicular_line(lp1, lp2, ddd=1000000)
     plt.plot([p1[0], p2[0]], [p1[1], p2[1]], '-')
     plt.xlim([-1.5, 2])
     plt.ylim([-1.5, 1.5])
@@ -143,20 +145,24 @@ for i in range(1, N+1):
     # point of the cut
     (polyx, polyy) = polyset[i - 1]
     j = identify_cut((tx, ty), (polyx, polyy))
+    # Point of the intersection
+    new_p = compute_intersection(j, (polyx, polyy), (p1, p2))
+
+    #plt.plot(new_p[0], new_p[1], 'v')
+
+
     # Remove after the cut
-    polyset[i - 1] = [polyx[j:], polyy[j:]]
+    polyset[i - 1] = [[new_p[0]] + polyx[j:], [new_p[1]] + polyy[j:]]
 
-
-
+    # add polyline (the first line was added at the beginning)
     if not i == N:
-        # add polyline
         polyset.append([tx, ty])
 
     # plt.show()
     print j
 
 for (polyx, polyy) in polyset:
-    plt.plot(polyx, polyy)
+    plt.plot(polyx, polyy, 'b')
 
 plt.show()
 # for a in agents:

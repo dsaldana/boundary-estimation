@@ -40,3 +40,39 @@ def identify_cut((tx, ty), polyline):
         if p2_side == side or p2_side == 0:
             return j
     return None
+
+
+def compute_intersection(i, (polyx, polyy), perp_line):
+    """
+    new point in the intersection.
+    It creates a perpendicular line from the i-point in path.
+    and returns the intersection between the perpendicular and the path.
+    """
+    ########## Intersection point #########
+    # segment of interest.
+    seg = LineString([(polyx[i], polyy[i]),
+                      (polyx[i - 1], polyy[i - 1])])
+    # perpendicular segment
+    # p1, p2 = perpendicular_line(lp1, lp2, ddd=100000)
+    per_seg = LineString(perp_line)
+
+    # plt.plot((polyx[i], polyx[i - 1]),
+    #          (polyy[i], polyy[i - 1]), 'r')
+    # plt.plot([p1[0], p2[0]],[p1[1], p2[1]], 'r')
+
+    inter = per_seg.intersection(seg)
+
+    intersection = None
+
+    ## intersection
+    if inter.type == 'Point':
+        intersection = inter.coords[0]
+    elif inter.type == 'MultiPoint':
+        intersection = inter[0].coords[0]
+    elif inter.type == 'GeometryCollection':
+        print "---NO INTERSECTION "  # , [path[i], path[i - 1]], i
+        # intersection = inter[0].coords[0]
+    else:
+        print "Unknown type", inter.type
+
+    return intersection
