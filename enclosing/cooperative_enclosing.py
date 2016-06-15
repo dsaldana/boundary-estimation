@@ -5,14 +5,17 @@ import random
 import matplotlib.pyplot as plt
 from shapely.geometry import LineString, Polygon, Point
 
-
 ### Generate
-def boundaries_on_time():
+from enclosing.path_joiner import perpendicular_line, side_of_line
+from enclosing.s_estimator import identify_cut
+
+
+def boundaries_on_time(t_steps=500):
     """
     Boundary on time
     :return: poligon for the boundary at each time step.
     """
-    time = range(500)
+    time = range(t_steps)
     nth = 200  # Number of partitions for theta
     lin_theta = np.linspace(0, 2 * math.pi, nth)
 
@@ -94,37 +97,83 @@ vel = .1
 
 ## Creating agents
 boundary0, boundary1 = boundaries[0], boundaries[1]
-iloc = np.random.randint(0, len(boundary0), N)
+# iloc = np.random.randint(0, len(boundary0), N)
+M = len(boundary0)
+iloc = [7 * M / 10, M / 2, M / 10]
 agents = [Agent(boundary1[i - 1], boundary0[i]) for i in iloc]
 
 # bx, by = boundary1.T
 # plt.plot(bx, by)
 
+####### Initial path
+initial_steps = 80
 # move the robots with constant velocity
-for boundary in boundaries[2:]:
+for boundary in boundaries[2:initial_steps]:
     for a in agents:
         # vel = .3 * random.random() + .1
         a.move_on_boundary(boundary, vel)
 
-bx, by = boundaries[-1].T
-plt.plot(bx, by)
+# Draw initial path
+for a in agents:
+    plt.plot(a.traj_x[-1], a.traj_y[-1], 'o')
+    plt.plot(a.traj_x, a.traj_y, '.')
 
-# for a in agents:
-#     plt.plot(a.traj_x, a.traj_y)
+bx, by = boundaries[initial_steps - 1].T
+plt.plot(bx, by, '--')
+# plt.show()
+# plt.ion()
+
+#### Joining paths
+# polyline for robot 0
+polyset = [(agents[0].traj_x, agents[0].traj_y)]
+
+for i in range(1, N+1):
+    a = agents[i % N]
+    # Trajectory for robot i
+    tx, ty = a.traj_x, a.traj_y
+
+    # draw debug
+    p1, p2 = perpendicular_line((tx[-1], ty[-1]), (tx[-2], ty[-2]), ddd=1000000)
+    plt.plot([p1[0], p2[0]], [p1[1], p2[1]], '-')
+    plt.xlim([-1.5, 2])
+    plt.ylim([-1.5, 1.5])
+    # plt.draw()
+    # plt.pause(5.5)
+
+    # point of the cut
+    (polyx, polyy) = polyset[i - 1]
+    j = identify_cut((tx, ty), (polyx, polyy))
+    # Remove after the cut
+    polyset[i - 1] = [polyx[j:], polyy[j:]]
 
 
-tail = 40
-plt.ion()
 
-for i in range(tail + 1, len(boundaries)):
-    plt.clf()
-    bx, by = boundaries[i].T
-    plt.plot(bx, by)
+    if not i == N:
+        # add polyline
+        polyset.append([tx, ty])
 
-    for a in agents:
-        plt.plot(a.traj_x[i - tail:i + 1], a.traj_y[i - tail:i + 1], '.-')
-        plt.plot(a.traj_x[i], a.traj_y[i], 'o')
-    plt.draw()
-    plt.pause(0.5)
+    # plt.show()
+    print j
+
+for (polyx, polyy) in polyset:
+    plt.plot(polyx, polyy)
 
 plt.show()
+# for a in agents:
+#     plt.plot(a.traj_x, a.traj_y)
+#
+#
+# tail = 40
+# plt.ion()
+#
+# for i in range(tail + 1, len(boundaries)):
+#     plt.clf()
+#     bx, by = boundaries[i].T
+#     plt.plot(bx, by)
+#
+#     for a in agents:
+#         plt.plot(a.traj_x[i - tail:i + 1], a.traj_y[i - tail:i + 1], '.-')
+#         plt.plot(a.traj_x[i], a.traj_y[i], 'o')
+#     plt.draw()
+#     plt.pause(0.5)
+#
