@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 
 ### Generate
 from enclosing.Agent import Agent
-from enclosing.path_joiner import perpendicular_line, side_of_line
-from enclosing.s_estimator import identify_cut, compute_intersection, cut_polyline, get_perpendicular
+from enclosing.s_estimator import cut_polyline, get_perpendicular
 
 
 def boundaries_on_time(t_steps=500):
@@ -19,21 +18,14 @@ def boundaries_on_time(t_steps=500):
     nth = 200  # Number of partitions for theta
     lin_theta = np.linspace(0, 2 * math.pi, nth)
 
-    # xx, yy = [], []
     boundaries = []
 
     for t in time:
         x = np.cos(lin_theta) + math.sin(.01 * t)
         y = np.sin(lin_theta)
-        # xx.append(x)
-        # yy.append(y)
         boundaries.append(np.vstack((x, y)).T)
-    # xx = np.array(xx)
-    # yy = np.array(yy)
 
     return np.array(boundaries)
-
-    # return time, xx, yy
 
 
 #######################################
@@ -52,8 +44,6 @@ M = len(boundary0)
 iloc = [7 * M / 10, M / 2, M / 10]
 agents = [Agent(boundary1[i - 1], boundary0[i]) for i in iloc]
 
-# bx, by = boundary1.T
-# plt.plot(bx, by)
 
 ####### Initial path
 initial_steps = 80
