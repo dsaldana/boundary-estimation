@@ -118,36 +118,37 @@ plt.show()
 # Parametrize the polyline
 ############### Update
 
-# for a in agents:
-boundary = boundaries[initial_steps]
+for k in range(30):
+    # for a in agents:
+    boundary = boundaries[initial_steps+k]
 
-for i in range(N):
-    a = agents[i]
-    a.move_on_boundary(boundary, .1)
+    for i in range(N):
+        a = agents[i]
+        a.move_on_boundary(boundary, .1)
 
-    # new dot in the trajectory
-    t_px, t_py = a.traj_x[-1], a.traj_y[-1]
+        # new dot in the trajectory
+        t_px, t_py = a.traj_x[-1], a.traj_y[-1]
 
-    # plt.show()
-    # for (polyx, polyy) in polyset:
-    #     plt.plot(polyx, polyy, 'b')
-    # plt.plot(t_px, t_py, 'rv')
-    # plt.show()
+        # plt.show()
+        # for (polyx, polyy) in polyset:
+        #     plt.plot(polyx, polyy, 'b')
+        # plt.plot(t_px, t_py, 'rv')
+        # plt.show()
 
-    #### Add new part
-    polyx, polyy = polyset[i]
-    polyx.append(a.x)
-    polyy.append(a.y)
+        #### Add new part
+        polyx, polyy = polyset[i]
+        polyx.append(a.x)
+        polyy.append(a.y)
 
-    #### Remove old part
-    # perpendicular line
-    # Remove after the cut
-    print i, 'here'
-    polyset[i - 1] = cut_polyline((a.traj_x, a.traj_y), polyset[i - 1])
+        #### Remove old part
+        # perpendicular line
+        # Remove after the cut
+        print i, 'here'
+        polyset[i - 1] = cut_polyline((a.traj_x, a.traj_y), polyset[i - 1])
 
-for (polyx, polyy) in polyset:
-    plt.plot(polyx, polyy, 'b')
-plt.show()
+    for (polyx, polyy) in polyset:
+        plt.plot(polyx, polyy, 'b')
+    plt.show()
 
 
 
