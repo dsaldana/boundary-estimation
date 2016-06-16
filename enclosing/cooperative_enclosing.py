@@ -3,11 +3,11 @@ import math
 import random
 
 import matplotlib.pyplot as plt
-from shapely.geometry import LineString, Polygon, Point
 
 ### Generate
+from enclosing.Agent import Agent
 from enclosing.path_joiner import perpendicular_line, side_of_line
-from enclosing.s_estimator import identify_cut, compute_intersection
+from enclosing.s_estimator import identify_cut, compute_intersection, cut_polyline, get_perpendicular
 
 
 def boundaries_on_time(t_steps=500):
@@ -34,56 +34,6 @@ def boundaries_on_time(t_steps=500):
     return np.array(boundaries)
 
     # return time, xx, yy
-
-
-############################################
-class Agent:
-    def __init__(self, (x1, y1), (x0, y0)):
-        # Location
-        self.x, self.y = x1, y1
-
-        # Trajectory
-        self.traj_x = [x1, x0]
-        self.traj_y = [y1, y0]
-
-    def move_on_boundary(self, boundary, vel):
-        pr = Point((self.x, self.y))  # point in robot location
-        circle = pr.buffer(vel).boundary  # circle around robot location
-
-        boundary_polygon = Polygon(boundary).boundary
-
-        intersection = circle.intersection(boundary_polygon)
-
-        ## select from intersected points
-        p1, p2 = np.array(intersection[0].xy), np.array(intersection[1].xy)
-
-        # distance to the second last point
-        # d1 = math.atan2((p1[1] - self.traj_y[-2]), (p1[0] - self.traj_x[-2]))
-        # d2 = math.atan2((p2[1] - self.traj_y[-2]), (p2[0] - self.traj_x[-2]))
-        # r = p1 if d1 > d2 else p2
-        # nx, ny = r
-        a1 = math.atan2((p1[1] - self.traj_y[-1]), (p1[0] - self.traj_x[-1]))
-        a2 = math.atan2((p2[1] - self.traj_y[-1]), (p2[0] - self.traj_x[-1]))
-
-        # path angle
-        a = math.atan2(self.traj_y[-1] - self.traj_y[-2],
-                       self.traj_x[-1] - self.traj_x[-2])
-
-        ## convert to positive angles
-        d1 = abs(a % (2 * math.pi) - a1)
-        d2 = abs(a % (2 * math.pi) - a2)
-
-        d1 = d1 if d1 < math.pi else abs(d1 - 2 * math.pi)
-        d2 = d2 if d2 < math.pi else abs(d2 - 2 * math.pi)
-
-        r = intersection[0] if d1 < d2 else intersection[1]
-        nx, ny = r.xy
-
-        self.x = nx[0]
-        self.y = ny[0]
-
-        self.traj_x.append(nx[0])
-        self.traj_y.append(ny[0])
 
 
 #######################################
@@ -120,53 +70,94 @@ for a in agents:
 
 bx, by = boundaries[initial_steps - 1].T
 plt.plot(bx, by, '--')
+
 # plt.show()
 # plt.ion()
+
+
+
 
 #### Joining paths
 # polyline for robot 0
 polyset = [(agents[0].traj_x, agents[0].traj_y)]
 
+# For each agent
 for i in range(1, N + 1):
     a = agents[i % N]
     # Trajectory for robot i
     tx, ty = a.traj_x, a.traj_y
-    # Last points of the trajectory
-    lp1 = (tx[-1], ty[-1])
-    lp2 = (tx[-2], ty[-2])
-    # draw debug
-    p1, p2 = perpendicular_line(lp1, lp2, ddd=1000000)
-    plt.plot([p1[0], p2[0]], [p1[1], p2[1]], '-')
-    plt.xlim([-1.5, 2])
-    plt.ylim([-1.5, 1.5])
-    # plt.draw()
-    # plt.pause(5.5)
 
-    # point of the cut
-    (polyx, polyy) = polyset[i - 1]
-    j = identify_cut((tx, ty), (polyx, polyy))
-    # Point of the intersection
-    new_p = compute_intersection(j, (polyx, polyy), (p1, p2))
+    # perpendicular line
 
-    #plt.plot(new_p[0], new_p[1], 'v')
-
-
+    # plt.clf()
+    # plt.plot([pline[0][0], pline[1][0]], [pline[0][1], pline[1][1]])
+    # plt.plot(polyset[i-1][0], polyset[i-1][1], 'o')
+    # plt.show()
+    print i
     # Remove after the cut
-    polyset[i - 1] = [[new_p[0]] + polyx[j:], [new_p[1]] + polyy[j:]]
+    polyset[i - 1] = cut_polyline((tx, ty), polyset[i - 1])
 
     # add polyline (the first line was added at the beginning)
     if not i == N:
         polyset.append([tx, ty])
 
+    # Remove path
+    a.traj_x, a.traj_y = a.traj_x[-2:], a.traj_y[-2:]
     # plt.show()
-    print j
+
+    ### Draw
+    (p1, p2) = get_perpendicular(tx, ty)
+    plt.plot([p1[0], p2[0]], [p1[1], p2[1]], '-')
+    plt.xlim([-1.5, 2])
+    plt.ylim([-1.5, 1.5])
 
 for (polyx, polyy) in polyset:
     plt.plot(polyx, polyy, 'b')
-
 plt.show()
+###############
+# Parametrize the polyline
+############### Update
+
 # for a in agents:
-#     plt.plot(a.traj_x, a.traj_y)
+boundary = boundaries[initial_steps]
+
+for i in range(N):
+    a = agents[i]
+    a.move_on_boundary(boundary, .1)
+
+    # new dot in the trajectory
+    t_px, t_py = a.traj_x[-1], a.traj_y[-1]
+
+    # plt.show()
+    # for (polyx, polyy) in polyset:
+    #     plt.plot(polyx, polyy, 'b')
+    # plt.plot(t_px, t_py, 'rv')
+    # plt.show()
+
+    #### Add new part
+    polyx, polyy = polyset[i]
+    polyx.append(a.x)
+    polyy.append(a.y)
+
+    #### Remove old part
+    # perpendicular line
+    # Remove after the cut
+    print i, 'here'
+    polyset[i - 1] = cut_polyline((a.traj_x, a.traj_y), polyset[i - 1])
+
+for (polyx, polyy) in polyset:
+    plt.plot(polyx, polyy, 'b')
+plt.show()
+
+
+
+
+
+
+
+
+
+
 #
 #
 # tail = 40

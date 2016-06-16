@@ -6,20 +6,22 @@ import matplotlib.pyplot as plt
 
 def identify_cut((tx, ty), polyline):
     # normal vector for robot i
-    p1, p2 = perpendicular_line((tx[-1], ty[-1]), (tx[-2], ty[-2]), ddd=1000000)
-    perp_line = [p1, p2]
+    perp_line = get_perpendicular(tx, ty)
 
-    per_seg = LineString([p1, p2])
+    # plt.clf()
+    # plt.plot([perp_line[0][0], perp_line[1][0]], [perp_line[0][1], perp_line[1][1]])
+    # plt.plot(polyline[0], polyline[1], 'o')
+    # plt.show()
+
 
     # Last linestring from robot im1
     oldp_x, oldp_y = polyline
-    # ls_rim1 = LineString(oldp_x, oldp_y)
 
     # Side of the second point
-    side = side_of_line([p1, p2], (tx[-2], ty[-2]))
+    side = side_of_line(perp_line, (tx[-2], ty[-2]))
 
     # Moving backwards trough the last polyline
-    for j in range(len(oldp_x) - 1, 2, -1):
+    for j in range(len(oldp_x) - 1, 0, -1):
         # for j in range(len(oldp_x)-1):
         p1 = oldp_x[j], oldp_y[j]
         p2 = oldp_x[j - 1], oldp_y[j - 1]
@@ -40,6 +42,31 @@ def identify_cut((tx, ty), polyline):
         if p2_side == side or p2_side == 0:
             return j
     return None
+
+def get_perpendicular(tx, ty, delta=100000000):
+    # Last points of the trajectory
+    lp1 = (tx[-1], ty[-1])
+    lp2 = (tx[-2], ty[-2])
+    # draw debug
+    p1, p2 = perpendicular_line(lp1, lp2, ddd=delta)
+
+    return p1, p2
+
+def cut_polyline((tx, ty), polyline):
+
+
+
+    j = identify_cut((tx, ty), polyline)
+    if j is None:
+        print 'Error: no intersection between path and polyline'
+        return None
+
+    # Point of the intersection
+    pline = get_perpendicular(tx, ty)
+    new_p = compute_intersection(j, polyline, pline)
+    # New polyline after cut
+    new_poly = [[new_p[0]] + polyline[0][j:], [new_p[1]] + polyline[1][j:]]
+    return new_poly
 
 
 def compute_intersection(i, (polyx, polyy), perp_line):
