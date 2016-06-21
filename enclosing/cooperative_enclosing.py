@@ -67,7 +67,7 @@ plt.plot(bx, by, '--')
 
 
 
-#### Joining paths
+######## Initial paths ################
 # polyline for robot 0
 polyset = [(agents[0].traj_x, agents[0].traj_y)]
 
@@ -104,6 +104,7 @@ for i in range(1, N + 1):
 for (polyx, polyy) in polyset:
     plt.plot(polyx, polyy, 'b')
 plt.show()
+
 ###############
 # Parametrize the polyline
 ############### Update
@@ -119,12 +120,6 @@ for k in range(30):
         # new dot in the trajectory
         t_px, t_py = a.traj_x[-1], a.traj_y[-1]
 
-        # plt.show()
-        # for (polyx, polyy) in polyset:
-        #     plt.plot(polyx, polyy, 'b')
-        # plt.plot(t_px, t_py, 'rv')
-        # plt.show()
-
         #### Add new part
         polyx, polyy = polyset[i]
         polyx.append(a.x)
@@ -133,7 +128,6 @@ for k in range(30):
         #### Remove old part
         # perpendicular line
         # Remove after the cut
-        print i, 'here'
         polyset[i - 1] = cut_polyline((a.traj_x, a.traj_y), polyset[i - 1])
 
     for (polyx, polyy) in polyset:
