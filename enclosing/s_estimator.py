@@ -178,7 +178,7 @@ def parametrize_polyset(polyset, id_zero):
     iz, jz = id_zero
     j = None
     s_param = {}
-    accum = 0
+    accum = 1
 
     # For each polyline, starting by the zero
     for p in range(N):
@@ -195,19 +195,18 @@ def parametrize_polyset(polyset, id_zero):
         # Following points
         while j > 0:
             d = euclidean_distance(line[j], line[j - 1])
-            accum += d / arc_len
+            accum -= d / arc_len
             s_param[(i, j - 1)] = accum
             j -= 1
 
-
-            # Remaining points
+    # Remaining points
     line = line_ponts[iz]
 
-    accum = 1
+    accum = 0
     for j in range(jz + 1, len(line)):
         print jz, j
         d = euclidean_distance(line[j], line[j - 1])
-        accum -= d / arc_len
-        s_param[(iz, j )] = accum
+        accum += d / arc_len
+        s_param[(iz, j)] = accum
 
     return s_param
