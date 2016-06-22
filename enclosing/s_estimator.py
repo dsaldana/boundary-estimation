@@ -1,6 +1,6 @@
-from shapely.geometry import LineString
+from shapely.geometry import LineString, MultiLineString
 
-from enclosing.path_joiner import perpendicular_line, side_of_line
+from enclosing.path_joiner import perpendicular_line, side_of_line, euclidean_distance
 import matplotlib.pyplot as plt
 
 
@@ -43,6 +43,7 @@ def identify_cut((tx, ty), polyline):
             return j
     return None
 
+
 def get_perpendicular(tx, ty, delta=100000000):
     # Last points of the trajectory
     lp1 = (tx[-1], ty[-1])
@@ -52,10 +53,8 @@ def get_perpendicular(tx, ty, delta=100000000):
 
     return p1, p2
 
+
 def cut_polyline((tx, ty), polyline):
-
-
-
     j = identify_cut((tx, ty), polyline)
     if j is None:
         print 'Error: no intersection between path and polyline'
@@ -103,3 +102,112 @@ def compute_intersection(i, (polyx, polyy), perp_line):
         print "Unknown type", inter.type
 
     return intersection
+
+
+def identify_intersection(perp_line, polyline):
+    # Last linestring from robot im1
+    oldp_x, oldp_y = polyline
+
+    # Moving backwards trough the last polyline
+    for j in range(len(oldp_x) - 1, 0, -1):
+        # for j in range(len(oldp_x)-1):
+        p1 = oldp_x[j], oldp_y[j]
+        p2 = oldp_x[j - 1], oldp_y[j - 1]
+
+        ### side of p1
+        p1_side = side_of_line(perp_line, p1)
+        p2_side = side_of_line(perp_line, p2)
+        if p1_side != p2_side:
+            return j
+    return None
+
+
+def update_zero(zero, perp_line, polyset):
+    # Identify the intersection between the perpendicular line and the polyset part
+    min_d = 10000000  # Minimum distance
+    id_c = None
+    c = None  # Candiate point
+    for i, polyline in enumerate(polyset):
+        j = identify_intersection(perp_line, polyline)
+        if j is not None:
+            new_p = compute_intersection(j, polyline, perp_line)
+
+            d = euclidean_distance(new_p, zero)
+
+            if d < min_d:
+                min_d = d
+                id_c = [i, j]
+                c = new_p
+
+    # if the intersection point already exists
+    i, j = id_c
+    polyline = polyset[i]
+    if euclidean_distance(c, (polyline[0][j], polyline[1][j])) == 0:
+        perp_line = get_perpendicular(polyline[0][:j + 1], polyline[1][:j + 1])
+        return c, id_c, perp_line, polyset
+    elif euclidean_distance(c, (polyline[0][j - 1], polyline[1][j - 1])) == 0:
+        id_c[1] -= 1
+        perp_line = get_perpendicular(polyline[0][:j], polyline[1][:j])
+        return c, id_c, perp_line, polyset
+
+    # add the point to the polyline
+    tx, ty = polyset[i]
+    polyline = tx[:j] + [c[0]] + tx[j:], ty[:j] + [c[1]] + ty[j:]
+    perp_line = get_perpendicular(polyline[0][:j + 1], polyline[1][:j + 1])
+    id_c[1] += 1
+    polyset[i] = polyline
+    return c, id_c, perp_line, polyset
+
+
+def parametrize_polyset(polyset, id_zero):
+    """
+    Parametrize the polyset by arc-lenght
+    :param polyset:
+    :param id_zero:
+    """
+    line_ponts = [[(x, y) for x, y in zip(linex, liney)] for (linex, liney) in polyset]
+    # Arc length
+    mls = MultiLineString(line_ponts)
+
+    arc_len = mls.length
+
+    # Number of polylines
+    N = len(polyset)
+
+    # Zero
+    iz, jz = id_zero
+    j = None
+    s_param = {}
+    accum = 0
+
+    # For each polyline, starting by the zero
+    for p in range(N):
+        i = (iz + p) % N
+        line = line_ponts[i]
+
+        if j is None:
+            j = jz
+        else:
+            j = len(line) - 1
+
+        # First point
+        s_param[(i, j)] = accum
+        # Following points
+        while j > 0:
+            d = euclidean_distance(line[j], line[j - 1])
+            accum += d / arc_len
+            s_param[(i, j - 1)] = accum
+            j -= 1
+
+
+            # Remaining points
+    line = line_ponts[iz]
+
+    accum = 1
+    for j in range(jz + 1, len(line)):
+        print jz, j
+        d = euclidean_distance(line[j], line[j - 1])
+        accum -= d / arc_len
+        s_param[(iz, j )] = accum
+
+    return s_param

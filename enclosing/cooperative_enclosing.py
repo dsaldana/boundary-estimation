@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 ### Generate
 from enclosing.Agent import Agent
-from enclosing.s_estimator import cut_polyline, get_perpendicular, update_zero
+from enclosing.s_estimator import cut_polyline, get_perpendicular, update_zero, parametrize_polyset
 
 
 def boundaries_on_time(t_steps=500):
@@ -33,6 +33,7 @@ draw_perps = False  # Perpendicular lines
 draw_paths = False
 draw_init_polyset = False
 draw_polysets = True
+draw_arc = True
 
 #######################################
 # Compute boundaries
@@ -66,12 +67,6 @@ if draw_paths:
 
     bx, by = boundaries[initial_steps - 1].T
     plt.plot(bx, by, '--')
-
-# plt.show()
-# plt.ion()
-
-
-
 
 ######## Initial multi-line-string ################
 # polyline for robot 0
@@ -110,14 +105,26 @@ zero = ztx[idz[1]], zty[idz[1]]
 # draw
 if draw_init_polyset:
     for (polyx, polyy) in polyset:
-        plt.plot(polyx, polyy, 'b')
+        plt.plot(polyx, polyy, 'b.-')
         plt.plot(zero[0], zero[1], 'x')
         # Zero perpendicular
         plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')
         plt.xlim([-1.5, 2])
         plt.ylim([-1.5, 1.5])
-plt.show()
 
+if draw_arc:
+    ss = parametrize_polyset(polyset, idz)
+
+    def draw_arc_param(ss, polyset):
+        for (i, j), s in ss.items():
+            lx, ly = polyset[i]
+            px, py = lx[j], ly[j]
+
+            plt.plot(px, py, 'o')
+            plt.annotate('%.4f' % s, xy=(px + .0, py))
+    draw_arc_param(ss, polyset)
+
+plt.show()
 
 ###############
 # Update multi-line string
@@ -125,9 +132,11 @@ plt.show()
 
 
 
-for k in range(500):
-    print k
-    # for a in agents:
+
+
+
+# Move the boundary
+for k in range(50):
     boundary = boundaries[initial_steps + k]
 
     # For each agent
@@ -149,10 +158,11 @@ for k in range(500):
         polyset[i - 1] = cut_polyline((a.traj_x, a.traj_y), polyset[i - 1])
 
         # Update zero perpendicular
-        zero, id_c, (zp1, zp2), polyset = update_zero(zero, (zp1, zp2), polyset)
-        print id_c
+        zero, id_zero, (zp1, zp2), polyset = update_zero(zero, (zp1, zp2), polyset)
 
-    if draw_polysets :
+        # Arc-length
+
+    if draw_polysets:
         for (polyx, polyy) in polyset:
             plt.plot(polyx, polyy, 'b.-')
             # Zero
@@ -161,10 +171,15 @@ for k in range(500):
             plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')
             plt.xlim([-1.5, 2])
             plt.ylim([-1.5, 1.5])
-        plt.show()
+
+
+    if draw_arc:
+        ss = parametrize_polyset(polyset, id_zero)
+        draw_arc_param(ss, polyset)
 
 
 
+    plt.show()
 
 
 
