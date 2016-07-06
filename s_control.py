@@ -1,5 +1,5 @@
 from enclosing.cooperative_enclosing import boundaries_on_time, init_agents, move_agents, draw_initial_path, \
-    polylines_to_pieceswise_boundary, draw_arc_param, update_pieceswise_boundary
+    polylines_to_pieceswise_boundary, draw_arc_param, update_pieceswise_boundary, update_s_locations
 import matplotlib.pyplot as plt
 
 #######################################
@@ -36,7 +36,9 @@ ss = parametrize_polyset(polyset, idz)
 if draw_arc:
     draw_arc_param(ss, polyset)
     plt.show()
-#Location of the agent in the curve.
+
+# Location of the agent in the curve.
+update_s_locations(agents, ss)
 
 ##############
 # Update multi-line string
@@ -56,6 +58,8 @@ for k in range(50):
         polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, zero_point, zero_line, polyset,
                                                                              draw_polysets=draw_polysets)
 
+        # Update location of the agents in the curve
+        update_s_locations(agents, ss)
 
 
     if draw_arc:

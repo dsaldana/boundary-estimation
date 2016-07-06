@@ -120,7 +120,16 @@ def draw_arc_param(ss, polyset):
         plt.annotate('%.4f' % s, xy=(px + .0, py))
 
 
-
+def update_s_locations(agents, ss):
+    """
+    Update location of the agents in the curve
+    :param agents:
+    :param ss:
+    """
+    N = len(agents)
+    for i in range(N):
+        a = agents[i]
+        a.s = ss[(i, 0)]
 
 
 def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets=False):
