@@ -28,9 +28,41 @@ def boundaries_on_time(t_steps=500):
     return np.array(boundaries)
 
 
+def init_agents(n, boundary0, boundary1):
+    # iloc = np.random.randint(0, len(boundary0), n)
+    M = len(boundary0)
+    iloc = [7 * M / 10, M / 2, M / 10]
+    agents = [Agent(boundary1[il - 1], boundary0[il]) for il in iloc]
+    return agents
+
+
+def move_agents(agents1, from_t=2, to_t=80, vel=.1):
+    """
+    move the robots with constant velocity
+    :param agents1:
+    :param from_t:
+    :param to_t:
+    :param vel:
+    """
+    for boundary in boundaries[from_t:to_t]:
+        for a in agents1:
+            a.move_on_boundary(boundary, vel)
+
+
+def draw_initial_path(agents1, boundaries1, draw_paths=False):
+    # Draw initial path
+    if draw_paths:
+        for a in agents1:
+            plt.plot(a.traj_x[-1], a.traj_y[-1], 'o')
+            plt.plot(a.traj_x, a.traj_y, '-')
+
+        bx, by = boundaries1[len(a.traj_x) - 1].T
+        plt.plot(bx, by, '--')
+        plt.show()
+
 # Draw
 draw_perps = False  # Perpendicular lines
-draw_paths = False
+draw_paths = True
 draw_init_polyset = False
 draw_polysets = True
 draw_arc = True
@@ -41,32 +73,17 @@ boundaries = boundaries_on_time()
 
 ############ Initial conditions ###############
 # Number of robots
+
 N = 3
-vel = .1
 
 ## Creating agents
-boundary0, boundary1 = boundaries[0], boundaries[1]
-# iloc = np.random.randint(0, len(boundary0), N)
-M = len(boundary0)
-iloc = [7 * M / 10, M / 2, M / 10]
-agents = [Agent(boundary1[i - 1], boundary0[i]) for i in iloc]
+agents = init_agents(N, boundaries[0], boundaries[1])
 
-####### Initial path ############
+######## Initial movement
 initial_steps = 80
-# move the robots with constant velocity
-for boundary in boundaries[2:initial_steps]:
-    for a in agents:
-        # vel = .3 * random.random() + .1
-        a.move_on_boundary(boundary, vel)
+move_agents(agents, from_t=2, to_t=initial_steps, vel=.1)
+draw_initial_path(agents, boundaries, draw_paths=draw_paths)
 
-# Draw initial path
-if draw_paths:
-    for a in agents:
-        plt.plot(a.traj_x[-1], a.traj_y[-1], 'o')
-        plt.plot(a.traj_x, a.traj_y, '-')
-
-    bx, by = boundaries[initial_steps - 1].T
-    plt.plot(bx, by, '--')
 
 ######## Initial multi-line-string ################
 # polyline for robot 0
@@ -115,6 +132,7 @@ if draw_init_polyset:
 if draw_arc:
     ss = parametrize_polyset(polyset, idz)
 
+
     def draw_arc_param(ss, polyset):
         for (i, j), s in ss.items():
             lx, ly = polyset[i]
@@ -122,6 +140,8 @@ if draw_arc:
 
             plt.plot(px, py, 'o')
             plt.annotate('%.4f' % s, xy=(px + .0, py))
+
+
     draw_arc_param(ss, polyset)
 
 plt.show()
@@ -129,11 +149,6 @@ plt.show()
 ###############
 # Update multi-line string
 ###############
-
-
-
-
-
 
 # Move the boundary
 for k in range(50):
@@ -172,12 +187,9 @@ for k in range(50):
             plt.xlim([-1.5, 2])
             plt.ylim([-1.5, 1.5])
 
-
     if draw_arc:
         ss = parametrize_polyset(polyset, id_zero)
         draw_arc_param(ss, polyset)
-
-
 
     plt.show()
 
