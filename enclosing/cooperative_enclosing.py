@@ -111,21 +111,16 @@ def polylines_to_pieceswise_boundary(agents, draw_perps=False, draw_init_polyset
     return polyset, idz, zero, (zp1, zp2)
 
 
-def draw_arc_param2(polyset, idz, draw_arc=False):
-    if draw_arc:
-        ss = parametrize_polyset(polyset, idz)
+def draw_arc_param(ss, polyset):
+    for (i, j), s in ss.items():
+        lx, ly = polyset[i]
+        px, py = lx[j], ly[j]
 
-        def draw_arc_param(ss, polyset):
-            for (i, j), s in ss.items():
-                lx, ly = polyset[i]
-                px, py = lx[j], ly[j]
+        plt.plot(px, py, 'o')
+        plt.annotate('%.4f' % s, xy=(px + .0, py))
 
-                plt.plot(px, py, 'o')
-                plt.annotate('%.4f' % s, xy=(px + .0, py))
 
-        draw_arc_param(ss, polyset)
 
-    plt.show()
 
 
 def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets=False):
