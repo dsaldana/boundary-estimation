@@ -9,6 +9,8 @@ class Agent:
     def __init__(self, (x1, y1), (x0, y0)):
         # Location
         self.x, self.y = x1, y1
+        # Location in the curve
+        self.s = None
 
         # Trajectory
         self.traj_x = [x1, x0]
