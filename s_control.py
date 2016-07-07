@@ -1,14 +1,13 @@
-from math import atan2, sin, cos, pi
 import numpy as np
-from enclosing.cooperative_enclosing import boundaries_on_time, init_agents, move_agents, draw_initial_path, \
-    polylines_to_pieceswise_boundary, draw_arc_param, update_pieceswise_boundary, update_s_locations
+
 import matplotlib.pyplot as plt
 
-#######################################
-# Compute boundaries
-from enclosing.s_estimator import cut_polyline, update_zero, parametrize_polyset
 
-boundaries = boundaries_on_time()
+from enclosing.cooperative_enclosing import boundaries_on_time, init_agents, move_agents, draw_initial_path, \
+    polylines_to_pieceswise_boundary, draw_arc_param, update_pieceswise_boundary, update_s_locations, vel_control, \
+    arc_lenght
+
+from enclosing.s_estimator import parametrize_polyset
 
 ############ Initial conditions ###############
 # Graphic Debug
@@ -48,59 +47,26 @@ update_s_locations(agents, ss, polyset)
 
 errors = []
 
-# Move the boundary
+### Move the boundary
 for k in range(140):
     print k
     boundary = boundaries[initial_steps + k]
 
     # For each agent
-    single_error=[]
+    single_error = []
     for i in range(N):
         a = agents[i]
 
-        ### Velocity control
-        aa = agents[i - 1].s  # agent after
-        ab = agents[(i + 1) % N].s  # agent before
-        # if a.s > aa:
-        #     aa += 1
-        # if a.s < ab:
-        #     ab -= 1
-        # if aa < ab:
-        #     aa += 1
+        vel, e = vel_control(i, agents, ke=.4)
+        l = arc_lenght(boundary)
 
-        # s average
-        aver = (aa + ab) / 2.
-        #
-        if i == N - 1:
-            aver -= .5
-        if i == 0:
-            aver += .5
+        dot_r = .1 * vel*l
+        print vel, l, dot_r
+        a.move_on_boundary(boundary, dot_r)
 
-        # Closest distance to the average
-        if abs(a.s - aver) > abs((1 + aver) - a.s):
-            aver += 1
-
-        k = .4
-        vel = .1
-
-        e = (aver - a.s)
-
-        # if e > 1:
-        #     e %= 1
-        # e = atan2(sin(e*2*pi), cos(e*2*pi))/ (2*pi)
-
-
-        vel = .2 + k * e
-
-        if vel < 0.05:
-            vel = 0.05
-
-        a.move_on_boundary(boundary, vel)
-        print 'i=%d ab=%.2f aa=%.2f s=%.2f, av=%.2f vel=%.2f e=%f' % (i, ab, aa, a.s, aver, vel, e)
         single_error.append(e)
         ### Update piecewise boundary
         polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, zero_point, zero_line, polyset,
-
                                                                              draw_polysets=draw_polysets)
         # Parametrize curve
         ss = parametrize_polyset(polyset, id_zero)
@@ -112,7 +78,6 @@ for k in range(140):
     if draw_arc:
         draw_arc_param(ss, polyset)
         plt.show()
-
 
 plt.plot(np.array(errors))
 plt.show()

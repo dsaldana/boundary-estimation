@@ -2,6 +2,7 @@ import numpy as np
 import math
 import random
 from math import atan2, sin, cos, pi
+from shapely.geometry import Polygon
 
 import matplotlib.pyplot as plt
 
@@ -33,7 +34,7 @@ def init_agents(n, boundary0, boundary1):
     # iloc = np.random.randint(0, len(boundary0), n)
     M = len(boundary0)
     # iloc = [7 * M / 10, M / 2, M / 10]
-    iloc = [int(.3 * M), int(.2 * M), int(.1 * M)]
+    iloc = [int(.8 * M), int(.5 * M), int(.1 * M)]
     agents = [Agent(boundary1[il - 1], boundary0[il]) for il in iloc]
     return agents
 
@@ -56,12 +57,12 @@ def draw_initial_path(agents1, boundaries1, draw_paths=False):
     # Draw initial path
     if draw_paths:
         for a in agents1:
+            plt.plot(a.traj_x, a.traj_y, '.-')
             plt.plot(a.traj_x[-1], a.traj_y[-1], 'o')
-            plt.plot(a.traj_x, a.traj_y, '-')
 
         bx, by = boundaries1[len(a.traj_x) - 1].T
         plt.plot(bx, by, '--')
-        plt.show()
+        #plt.show()
 
 
 ######## Initial multi-line-string ################
@@ -109,17 +110,20 @@ def polylines_to_pieceswise_boundary(agents, draw_perps=False, draw_init_polyset
             plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')
             plt.xlim([-1.5, 2])  # FIXME static
             plt.ylim([-1.5, 1.5])
-        plt.show()
+        # plt.show()
     return polyset, idz, zero, (zp1, zp2)
 
 
-def draw_arc_param(ss, polyset):
+def draw_arc_param(ss, polyset, cols=None):
     for (i, j), s in ss.items():
         lx, ly = polyset[i]
         px, py = lx[j], ly[j]
 
-        plt.plot(px, py, 'o')
-        plt.annotate('%.4f' % s, xy=(px + .0, py))
+        if cols is None:
+            plt.plot(px, py, 'o')
+        else:
+            plt.plot(px, py, cols[i])
+        plt.annotate('%.2f' % s, xy=(px + .10, py))
 
 
 def update_s_locations(agents, ss, polyset):
@@ -186,6 +190,36 @@ def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets
         plt.show()
 
     return polyset, id_zero, zero, (zp1, zp2)
+
+
+def vel_control(i, agents, ke=.4, min_vel=0.05):
+    N = len(agents)
+    a = agents[i]
+
+    ### Velocity control
+    aa = agents[i - 1].s  # agent after
+    ab = agents[(i + 1) % N].s  # agent before
+
+    # s average
+    aver = (aa + ab) / 2.
+    #
+    if i == N - 1:
+        aver -= .5
+    if i == 0:
+        aver += .5
+
+    e = (aver - a.s)
+    vel = .2 + ke * e
+
+    if vel < min_vel:
+        vel = min_vel
+    # print 'i=%d ab=%.2f aa=%.2f s=%.2f, av=%.2f vel=%.2f e=%f' % (i, ab, aa, a.s, aver, vel, e)
+
+    return vel, e
+
+def arc_lenght(boundary):
+    pol = Polygon(boundary)
+    return pol.length
 
 #
 #
