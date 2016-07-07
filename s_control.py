@@ -1,5 +1,5 @@
 from math import atan2, sin, cos, pi
-
+import numpy as np
 from enclosing.cooperative_enclosing import boundaries_on_time, init_agents, move_agents, draw_initial_path, \
     polylines_to_pieceswise_boundary, draw_arc_param, update_pieceswise_boundary, update_s_locations
 import matplotlib.pyplot as plt
@@ -14,7 +14,7 @@ boundaries = boundaries_on_time()
 # Graphic Debug
 draw_paths = False
 draw_init_polyset = False
-draw_polysets = True
+draw_polysets = False
 draw_arc = False
 
 # Number of robots
@@ -46,11 +46,15 @@ update_s_locations(agents, ss, polyset)
 # Update multi-line string
 ###############
 
+errors = []
+
 # Move the boundary
-for k in range(50):
+for k in range(140):
+    print k
     boundary = boundaries[initial_steps + k]
 
     # For each agent
+    single_error=[]
     for i in range(N):
         a = agents[i]
 
@@ -93,7 +97,7 @@ for k in range(50):
 
         a.move_on_boundary(boundary, vel)
         print 'i=%d ab=%.2f aa=%.2f s=%.2f, av=%.2f vel=%.2f e=%f' % (i, ab, aa, a.s, aver, vel, e)
-
+        single_error.append(e)
         ### Update piecewise boundary
         polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, zero_point, zero_line, polyset,
 
@@ -104,6 +108,11 @@ for k in range(50):
         # Update location of the agents in the curve
         update_s_locations(agents, ss, polyset)
 
+    errors.append(single_error)
     if draw_arc:
         draw_arc_param(ss, polyset)
         plt.show()
+
+
+plt.plot(np.array(errors))
+plt.show()
