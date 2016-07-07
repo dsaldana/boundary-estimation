@@ -157,7 +157,7 @@ N = 1
 estimator = Estimator(N, M)
 
 estimator.initial_estimation(time, atheta, xx, yy)
-print estimator.std
+# print estimator.std
 
 x1, y1 = estimator.get_estimation_t(100, np.linspace(0, 2 * math.pi, 100))
 # plt.plot(x1, y1)

@@ -1,3 +1,5 @@
+from math import atan2, sin, cos, pi
+
 from enclosing.cooperative_enclosing import boundaries_on_time, init_agents, move_agents, draw_initial_path, \
     polylines_to_pieceswise_boundary, draw_arc_param, update_pieceswise_boundary, update_s_locations
 import matplotlib.pyplot as plt
@@ -12,8 +14,8 @@ boundaries = boundaries_on_time()
 # Graphic Debug
 draw_paths = False
 draw_init_polyset = False
-draw_polysets = False
-draw_arc = True
+draw_polysets = True
+draw_arc = False
 
 # Number of robots
 N = 3
@@ -38,7 +40,7 @@ if draw_arc:
     plt.show()
 
 # Location of the agent in the curve.
-update_s_locations(agents, ss)
+update_s_locations(agents, ss, polyset)
 
 ##############
 # Update multi-line string
@@ -52,18 +54,56 @@ for k in range(50):
     for i in range(N):
         a = agents[i]
 
-        vel = .1
-        a.move_on_boundary(boundary, vel)
+        ### Velocity control
+        aa = agents[i - 1].s  # agent after
+        ab = agents[(i + 1) % N].s  # agent before
+        # if a.s > aa:
+        #     aa += 1
+        # if a.s < ab:
+        #     ab -= 1
+        # if aa < ab:
+        #     aa += 1
 
+        # s average
+        aver = (aa + ab) / 2.
+        #
+        if i == N - 1:
+            aver -= .5
+        if i == 0:
+            aver += .5
+
+        # Closest distance to the average
+        if abs(a.s - aver) > abs((1 + aver) - a.s):
+            aver += 1
+
+        k = .4
+        vel = .1
+
+        e = (aver - a.s)
+
+        # if e > 1:
+        #     e %= 1
+        # e = atan2(sin(e*2*pi), cos(e*2*pi))/ (2*pi)
+
+
+        vel = .2 + k * e
+
+        if vel < 0.05:
+            vel = 0.05
+
+        a.move_on_boundary(boundary, vel)
+        print 'i=%d ab=%.2f aa=%.2f s=%.2f, av=%.2f vel=%.2f e=%f' % (i, ab, aa, a.s, aver, vel, e)
+
+        ### Update piecewise boundary
         polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, zero_point, zero_line, polyset,
+
                                                                              draw_polysets=draw_polysets)
+        # Parametrize curve
+        ss = parametrize_polyset(polyset, id_zero)
 
         # Update location of the agents in the curve
-        update_s_locations(agents, ss)
-
+        update_s_locations(agents, ss, polyset)
 
     if draw_arc:
-        ss = parametrize_polyset(polyset, id_zero)
         draw_arc_param(ss, polyset)
         plt.show()
-

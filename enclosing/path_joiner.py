@@ -206,7 +206,7 @@ def cutting_path(path, atime):
     etheta = []
 
     while i is not None:
-        print i
+        # print i
         # new polygon
         pol1 = mpath[i:j + 1]
         # new path and new time. Dont include j+1 because it is the first element of the next polygon.

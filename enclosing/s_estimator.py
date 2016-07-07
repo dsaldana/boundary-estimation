@@ -204,7 +204,7 @@ def parametrize_polyset(polyset, id_zero):
 
     accum = 0
     for j in range(jz + 1, len(line)):
-        print jz, j
+        # print jz, j
         d = euclidean_distance(line[j], line[j - 1])
         accum += d / arc_len
         s_param[(iz, j)] = accum

@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import random
+from math import atan2, sin, cos, pi
 
 import matplotlib.pyplot as plt
 
@@ -31,7 +32,8 @@ def boundaries_on_time(t_steps=500):
 def init_agents(n, boundary0, boundary1):
     # iloc = np.random.randint(0, len(boundary0), n)
     M = len(boundary0)
-    iloc = [7 * M / 10, M / 2, M / 10]
+    # iloc = [7 * M / 10, M / 2, M / 10]
+    iloc = [int(.3 * M), int(.2 * M), int(.1 * M)]
     agents = [Agent(boundary1[il - 1], boundary0[il]) for il in iloc]
     return agents
 
@@ -120,7 +122,7 @@ def draw_arc_param(ss, polyset):
         plt.annotate('%.4f' % s, xy=(px + .0, py))
 
 
-def update_s_locations(agents, ss):
+def update_s_locations(agents, ss, polyset):
     """
     Update location of the agents in the curve
     :param agents:
@@ -129,7 +131,30 @@ def update_s_locations(agents, ss):
     N = len(agents)
     for i in range(N):
         a = agents[i]
-        a.s = ss[(i, 0)]
+        ns = ss[(i, len(polyset[i][0]) - 1)]  # Normalized e
+
+        # a.s = ns
+        if a.s is None:
+            a.s = ns
+        else:
+            # Difference in the circular
+            ds = ns - a.s
+            ds = atan2(sin(ds * 2 * pi), cos(ds * 2 * pi)) / (2 * pi)
+            # Move the current one
+            a.s += ds
+
+
+            #     # delta s
+            #     ds1 = ss[(i, 0)] - a.s % 1
+            #     ds2 = ss[(i, 0)] - a.s % 1
+            #
+            #     if ds1 < 0:
+            #         ds1 += 1
+            #     if ds2 < 0:
+            #         ds2 += 1
+            #
+            #     ds = ds1 if ds1 > ds2 else ds2
+            #     a.s += ds
 
 
 def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets=False):
