@@ -14,7 +14,7 @@ from enclosing.s_estimator import parametrize_polyset
 draw_paths = False
 draw_init_polyset = False
 draw_polysets = False
-draw_arc = False
+draw_arc = True
 
 # Number of robots
 N = 3

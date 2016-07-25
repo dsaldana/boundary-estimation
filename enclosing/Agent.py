@@ -15,6 +15,9 @@ class Agent:
         # Trajectory
         self.traj_x = [x1, x0]
         self.traj_y = [y1, y0]
+        self.traj_t = []
+        self.traj_s = []
+
 
     def move_on_boundary(self, boundary, vel):
         pr = Point((self.x, self.y))  # point in robot location

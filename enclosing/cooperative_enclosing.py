@@ -11,7 +11,7 @@ from enclosing.Agent import Agent
 from enclosing.s_estimator import cut_polyline, get_perpendicular, update_zero, parametrize_polyset
 
 
-def boundaries_on_time(t_steps=500):
+def boundaries_on_time(t_steps=500, vel=.01):
     """
     Boundary on time
     :return: poligon for the boundary at each time step.
@@ -23,7 +23,7 @@ def boundaries_on_time(t_steps=500):
     boundaries = []
 
     for t in time:
-        x = np.cos(lin_theta) + math.sin(.01 * t)
+        x = np.cos(lin_theta) + math.sin(vel * t)
         y = np.sin(lin_theta)
         boundaries.append(np.vstack((x, y)).T)
 
@@ -34,7 +34,8 @@ def init_agents(n, boundary0, boundary1):
     # iloc = np.random.randint(0, len(boundary0), n)
     M = len(boundary0)
     # iloc = [7 * M / 10, M / 2, M / 10]
-    iloc = [int(.8 * M), int(.5 * M), int(.1 * M)]
+    # iloc = [int(.8 * M), int(.5 * M), int(.1 * M)]
+    iloc = [int(.4 * M), int(.2 * M), int(.1 * M)]
     agents = [Agent(boundary1[il - 1], boundary0[il]) for il in iloc]
     return agents
 
@@ -123,7 +124,7 @@ def draw_arc_param(ss, polyset, cols=None):
             plt.plot(px, py, 'o')
         else:
             plt.plot(px, py, cols[i])
-        plt.annotate('%.2f' % s, xy=(px + .10, py))
+        plt.annotate('%.2f' % s, xy=(px-.1, py))
 
 
 def update_s_locations(agents, ss, polyset):
