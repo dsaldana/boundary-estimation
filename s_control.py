@@ -2,10 +2,9 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-
 from enclosing.cooperative_enclosing import boundaries_on_time, init_agents, move_agents, draw_initial_path, \
     polylines_to_pieceswise_boundary, draw_arc_param, update_pieceswise_boundary, update_s_locations, vel_control, \
-    arc_lenght
+    arc_lenght, move_along_boundary
 
 from enclosing.s_estimator import parametrize_polyset
 
@@ -13,13 +12,14 @@ from enclosing.s_estimator import parametrize_polyset
 # Graphic Debug
 draw_paths = False
 draw_init_polyset = False
-draw_polysets = False
-draw_arc = True
+draw_polysets = True
+draw_arc = False
 
 # Number of robots
 N = 3
 # Compute boundaries
 boundaries = boundaries_on_time()
+# boundaries = boundaries_on_time(vel=.02)
 
 ## Creating agents
 agents = init_agents(N, boundaries[0], boundaries[1])
@@ -42,42 +42,13 @@ if draw_arc:
 update_s_locations(agents, ss, polyset)
 
 ##############
-# Update multi-line string
+# Move robots along the boundary
 ###############
+errors, polysets = move_along_boundary(agents, initial_steps, boundaries, (zero_point, zero_line, polyset),
+                                       running_steps=140)
 
-errors = []
-
-### Move the boundary
-for k in range(140):
-    print k
-    boundary = boundaries[initial_steps + k]
-
-    # For each agent
-    single_error = []
-    for i in range(N):
-        a = agents[i]
-
-        vel, e = vel_control(i, agents, ke=.4)
-        l = arc_lenght(boundary)
-
-        dot_r = .1 * vel*l
-        print vel, l, dot_r
-        a.move_on_boundary(boundary, dot_r)
-
-        single_error.append(e)
-        ### Update piecewise boundary
-        polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, zero_point, zero_line, polyset,
-                                                                             draw_polysets=draw_polysets)
-        # Parametrize curve
-        ss = parametrize_polyset(polyset, id_zero)
-
-        # Update location of the agents in the curve
-        update_s_locations(agents, ss, polyset)
-
-    errors.append(single_error)
-    if draw_arc:
-        draw_arc_param(ss, polyset)
-        plt.show()
-
-plt.plot(np.array(errors))
+# Plot first polyset
+for i in range(N):
+    plt.plot(polysets[0][i][0], polysets[0][i][1])
+# plt.plot(errors)
 plt.show()

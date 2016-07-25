@@ -63,7 +63,7 @@ def draw_initial_path(agents1, boundaries1, draw_paths=False):
 
         bx, by = boundaries1[len(a.traj_x) - 1].T
         plt.plot(bx, by, '--')
-        #plt.show()
+        # plt.show()
 
 
 ######## Initial multi-line-string ################
@@ -111,7 +111,7 @@ def polylines_to_pieceswise_boundary(agents, draw_perps=False, draw_init_polyset
             plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')
             plt.xlim([-1.5, 2])  # FIXME static
             plt.ylim([-1.5, 1.5])
-        # plt.show()
+            # plt.show()
     return polyset, idz, zero, (zp1, zp2)
 
 
@@ -124,7 +124,7 @@ def draw_arc_param(ss, polyset, cols=None):
             plt.plot(px, py, 'o')
         else:
             plt.plot(px, py, cols[i])
-        plt.annotate('%.2f' % s, xy=(px-.1, py))
+        plt.annotate('%.2f' % s, xy=(px - .1, py))
 
 
 def update_s_locations(agents, ss, polyset):
@@ -147,19 +147,6 @@ def update_s_locations(agents, ss, polyset):
             ds = atan2(sin(ds * 2 * pi), cos(ds * 2 * pi)) / (2 * pi)
             # Move the current one
             a.s += ds
-
-
-            #     # delta s
-            #     ds1 = ss[(i, 0)] - a.s % 1
-            #     ds2 = ss[(i, 0)] - a.s % 1
-            #
-            #     if ds1 < 0:
-            #         ds1 += 1
-            #     if ds2 < 0:
-            #         ds2 += 1
-            #
-            #     ds = ds1 if ds1 > ds2 else ds2
-            #     a.s += ds
 
 
 def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets=False):
@@ -218,9 +205,11 @@ def vel_control(i, agents, ke=.4, min_vel=0.05):
 
     return vel, e
 
+
 def arc_lenght(boundary):
     pol = Polygon(boundary)
     return pol.length
+
 
 #
 #
@@ -238,3 +227,40 @@ def arc_lenght(boundary):
 #     plt.draw()
 #     plt.pause(0.5)
 #
+
+
+def move_along_boundary(agents, initial_steps, boundaries, (zero_point, zero_line, polyset), running_steps=140,
+                        p_gain=.4):
+    N = len(agents)
+    errors = []
+    polysets = []
+
+    # Move the boundary
+    for k in range(running_steps):
+        boundary = boundaries[initial_steps + k]
+
+        # For each agent
+        single_error = []
+        for i in range(N):
+            a = agents[i]
+
+            vel, e = vel_control(i, agents, ke=p_gain)
+            a.move_on_boundary(boundary, vel)
+
+            single_error.append(e)
+            ### Update piecewise boundary
+            polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, zero_point, zero_line, polyset,
+                                                                                 draw_polysets=False)
+            # Parametrize curve
+            ss = parametrize_polyset(polyset, id_zero)
+
+            # Update location of the agents in the curve
+            update_s_locations(agents, ss, polyset)
+            a.traj_s.append(a.s)
+            a.traj_t.append(k)
+
+        # polysets.append(copy(polyset))
+        polysets.append([np.copy(p) for p in polyset])
+        errors.append(single_error)
+
+    return errors, polysets
