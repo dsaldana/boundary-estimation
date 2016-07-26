@@ -264,3 +264,12 @@ def move_along_boundary(agents, initial_steps, boundaries, (zero_point, zero_lin
         errors.append(single_error)
 
     return errors, polysets
+
+
+def extract_dataset(agents):
+    dataset = []
+    for i in range(len(agents[0].traj_x)):
+        for a in agents:
+            dataset.append([a.traj_t[i], a.traj_s[i], a.traj_x[i], a.traj_y[i]])
+
+    return dataset

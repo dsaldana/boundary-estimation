@@ -31,10 +31,6 @@ class Agent:
         p1, p2 = np.array(intersection[0].xy), np.array(intersection[1].xy)
 
         # distance to the second last point
-        # d1 = math.atan2((p1[1] - self.traj_y[-2]), (p1[0] - self.traj_x[-2]))
-        # d2 = math.atan2((p2[1] - self.traj_y[-2]), (p2[0] - self.traj_x[-2]))
-        # r = p1 if d1 > d2 else p2
-        # nx, ny = r
         a1 = math.atan2((p1[1] - self.traj_y[-1]), (p1[0] - self.traj_x[-1]))
         a2 = math.atan2((p2[1] - self.traj_y[-1]), (p2[0] - self.traj_x[-1]))
 
