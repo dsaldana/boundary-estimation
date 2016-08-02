@@ -161,8 +161,6 @@ def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets
     # Update zero perpendicular
     zero, id_zero, (zp1, zp2), polyset = update_zero(zero, zero_line, polyset)
 
-
-
     if draw_polysets:
         for (polyx, polyy) in polyset:
             plt.plot(polyx, polyy, 'b.-')
@@ -264,9 +262,12 @@ def move_along_boundary(agents, initial_steps, boundaries, (zero_point, zero_lin
 
 
 def extract_dataset(agents):
-    dataset = []
-    for i in range(len(agents[0].traj_x)):
+    tt, th, xx, yy = [], [], [], []
+    for i in range(len(agents[0].traj_s)):
         for a in agents:
-            dataset.append([a.traj_t[i], a.traj_s[i], a.traj_x[i], a.traj_y[i]])
+            tt.append(i)
+            th.append(a.traj_s[i])
+            xx.append(a.traj_x[i])
+            yy.append(a.traj_y[i])
 
-    return dataset
+    return tt, th, xx, yy

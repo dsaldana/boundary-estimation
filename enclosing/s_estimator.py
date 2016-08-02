@@ -116,6 +116,8 @@ def identify_intersection(perp_line, polyline):
         ### side of p1
         p1_side = side_of_line(perp_line, p1)
         p2_side = side_of_line(perp_line, p2)
+
+        # if the points are in different sides
         if p1_side != p2_side:
             return j
     return None
@@ -173,7 +175,7 @@ def parametrize_polyset(polyset, id_zero):
     # Number of polylines
     N = len(polyset)
 
-    # Zero
+    # Zero (iz is robot, jz is the id of the point in the linestring of robot iz)
     iz, jz = id_zero
     j = None
     s_param = {}

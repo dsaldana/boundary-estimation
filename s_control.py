@@ -17,7 +17,7 @@ draw_arc = False
 
 # Compute boundaries
 #boundaries = boundaries_on_time(vel=.03)
-boundaries = boundaries_on_time(vel=.01)
+boundaries = boundaries_on_time(vel=.0)
 
 ## Creating agents
 # Initial locations
@@ -62,7 +62,7 @@ for a in agents:
 
 ## Dataset
 dataset = extract_dataset(agents)
-
+print dataset[1]
 
 
 print np.array(dataset).shape
