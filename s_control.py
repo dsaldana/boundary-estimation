@@ -15,14 +15,16 @@ draw_init_polyset = False
 draw_polysets = True
 draw_arc = False
 
-# Number of robots
-N = 3
 # Compute boundaries
-boundaries = boundaries_on_time()
-# boundaries = boundaries_on_time(vel=.02)
+#boundaries = boundaries_on_time(vel=.03)
+boundaries = boundaries_on_time(vel=.01)
 
 ## Creating agents
-agents = init_agents(N, boundaries[0], boundaries[1])
+# Initial locations
+#iloc = [int(.4 * M), int(.2 * M), int(.1 * M)]
+M = len(boundaries[0])
+iloc = [int(.4 * M)]
+agents = init_agents(iloc, boundaries[0], boundaries[1])
 
 ######## Initial paths
 initial_steps = 80

@@ -23,20 +23,15 @@ def boundaries_on_time(t_steps=500, vel=.01):
     boundaries = []
 
     for t in time:
-        x = np.cos(lin_theta) + math.sin(vel * t)
-        y = np.sin(lin_theta)
+        x = np.cos(lin_theta) + vel * t  # math.sin(vel * t)
+        y = np.sin(lin_theta) + vel * t
         boundaries.append(np.vstack((x, y)).T)
 
     return np.array(boundaries)
 
 
-def init_agents(n, boundary0, boundary1):
-    # iloc = np.random.randint(0, len(boundary0), n)
-    M = len(boundary0)
-    # iloc = [7 * M / 10, M / 2, M / 10]
-    # iloc = [int(.8 * M), int(.5 * M), int(.1 * M)]
-    iloc = [int(.4 * M), int(.2 * M), int(.1 * M)]
-    agents = [Agent(boundary1[il - 1], boundary0[il]) for il in iloc]
+def init_agents(robot_locations, boundary0, boundary1):
+    agents = [Agent(boundary1[il - 1], boundary0[il]) for il in robot_locations]
     return agents
 
 
@@ -165,6 +160,8 @@ def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets
 
     # Update zero perpendicular
     zero, id_zero, (zp1, zp2), polyset = update_zero(zero, zero_line, polyset)
+
+
 
     if draw_polysets:
         for (polyx, polyy) in polyset:

@@ -21,8 +21,8 @@ def identify_cut((tx, ty), polyline):
     side = side_of_line(perp_line, (tx[-2], ty[-2]))
 
     # Moving backwards trough the last polyline
-    for j in range(len(oldp_x) - 1, 0, -1):
-        # for j in range(len(oldp_x)-1):
+    #for j in range(len(oldp_x) - 1, 0, -1):
+    for j in range(len(oldp_x) - 2, 0, -1):  # XXX: the line above is the best.
         p1 = oldp_x[j], oldp_y[j]
         p2 = oldp_x[j - 1], oldp_y[j - 1]
 
@@ -57,8 +57,7 @@ def get_perpendicular(tx, ty, delta=100000000):
 def cut_polyline((tx, ty), polyline):
     j = identify_cut((tx, ty), polyline)
     if j is None:
-        print 'Error: no intersection between path and polyline'
-        return None
+        raise ValueError('Error: no intersection between path and polyline')
 
     # Point of the intersection
     pline = get_perpendicular(tx, ty)

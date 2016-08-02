@@ -1,9 +1,9 @@
 import math
 from sympy import lambdify, var
 
-from anomaly_common import theta, t, anomaly_h
+from boundary.util.anomaly_common import theta, t, anomaly_h
 from dataset import D
-from regression import create_h
+from boundary.util.regression import create_h
 import numpy as np
 from numpy.linalg import inv
 import matplotlib.pyplot as plt
