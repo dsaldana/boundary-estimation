@@ -21,7 +21,7 @@ def identify_cut((tx, ty), polyline):
     side = side_of_line(perp_line, (tx[-2], ty[-2]))
 
     # Moving backwards trough the last polyline
-    #for j in range(len(oldp_x) - 1, 0, -1):
+    # for j in range(len(oldp_x) - 1, 0, -1):
     for j in range(len(oldp_x) - 2, 0, -1):  # XXX: the line above is the best.
         p1 = oldp_x[j], oldp_y[j]
         p2 = oldp_x[j - 1], oldp_y[j - 1]
@@ -103,9 +103,13 @@ def compute_intersection(i, (polyx, polyy), perp_line):
     return intersection
 
 
-def identify_intersection(perp_line, polyline):
+def identify_intersection(p2_side_old, perp_line, polyline):
     # Last linestring from robot im1
     oldp_x, oldp_y = polyline
+
+    # Current zero
+    # polyline[]
+
 
     # Moving backwards trough the last polyline
     for j in range(len(oldp_x) - 1, 0, -1):
@@ -118,18 +122,18 @@ def identify_intersection(perp_line, polyline):
         p2_side = side_of_line(perp_line, p2)
 
         # if the points are in different sides
-        if p1_side != p2_side:
+        if p1_side != p2_side and p2_side == p2_side_old:
             return j
     return None
 
 
-def update_zero(zero, perp_line, polyset):
+def update_zero(p2_side, zero, perp_line, polyset):
     # Identify the intersection between the perpendicular line and the polyset part
     min_d = 10000000  # Minimum distance
     id_c = None
     c = None  # Candiate point
     for i, polyline in enumerate(polyset):
-        j = identify_intersection(perp_line, polyline)
+        j = identify_intersection(p2_side, perp_line, polyline)
         if j is not None:
             new_p = compute_intersection(j, polyline, perp_line)
 

@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 ### Generate
 from enclosing.Agent import Agent
+from enclosing.path_joiner import side_of_line
 from enclosing.s_estimator import cut_polyline, get_perpendicular, update_zero, parametrize_polyset
 
 
@@ -144,7 +145,7 @@ def update_s_locations(agents, ss, polyset):
             a.s += ds
 
 
-def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets=False):
+def update_pieceswise_boundary(i, agent, id_zero, zero, zero_line, polyset, draw_polysets=False):
     # new dot in the trajectory
     # t_px, t_py = agent.traj_x[-1], agent.traj_y[-1]
 
@@ -153,13 +154,22 @@ def update_pieceswise_boundary(i, agent, zero, zero_line, polyset, draw_polysets
     polyx.append(agent.x)
     polyy.append(agent.y)
 
+
+    ### Point 2 should belong to this side
+    polyset_zero_x, polyset_zero_y = polyset[id_zero[0]]
+    p2 = polyset_zero_x[id_zero[1] - 1], polyset_zero_y[id_zero[1] - 1]
+    p2_side = side_of_line(zero_line, p2)
+
+
     #### Remove old part
     # perpendicular line
     # Remove after the cut
     polyset[i - 1] = cut_polyline((agent.traj_x, agent.traj_y), polyset[i - 1])
 
+
+
     # Update zero perpendicular
-    zero, id_zero, (zp1, zp2), polyset = update_zero(zero, zero_line, polyset)
+    zero, id_zero, (zp1, zp2), polyset = update_zero(p2_side, zero, zero_line, polyset)
 
     if draw_polysets:
         for (polyx, polyy) in polyset:
@@ -224,7 +234,7 @@ def arc_lenght(boundary):
 #
 
 
-def move_along_boundary(agents, initial_steps, boundaries, (zero_point, zero_line, polyset), running_steps=140,
+def move_along_boundary(agents, initial_steps, boundaries, (id_zero, zero_point, zero_line, polyset), running_steps=140,
                         p_gain=.4):
     N = len(agents)
     errors = []
@@ -244,7 +254,8 @@ def move_along_boundary(agents, initial_steps, boundaries, (zero_point, zero_lin
 
             single_error.append(e)
             ### Update piecewise boundary
-            polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, zero_point, zero_line, polyset,
+            polyset, id_zero, zero_point, zero_line = update_pieceswise_boundary(i, a, id_zero, zero_point, zero_line,
+                                                                                 polyset,
                                                                                  draw_polysets=False)
             # Parametrize curve
             ss = parametrize_polyset(polyset, id_zero)

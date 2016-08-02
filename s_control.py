@@ -46,7 +46,7 @@ update_s_locations(agents, ss, polyset)
 ##############
 # Move robots along the boundary
 ###############
-errors, polysets = move_along_boundary(agents, initial_steps, boundaries, (zero_point, zero_line, polyset),
+errors, polysets = move_along_boundary(agents, initial_steps, boundaries, (idz, zero_point, zero_line, polyset),
                                        running_steps=140)
 
 
