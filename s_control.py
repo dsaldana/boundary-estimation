@@ -17,21 +17,23 @@ draw_arc = False
 
 # Compute boundaries
 boundaries = boundaries_on_time(vel=.03)
+# robot_speed = .2
+
 boundaries = np.load('boundaries.npy')
-# boundaries[0], boundaries[1] = boundaries[1], boundaries[0]
-robot_speed = 5.
+robot_speed = 2.
+
 
 ## Creating agents
 # Initial locations
 M = len(boundaries[0])
-# iloc = [int(.4 * M), int(.2 * M), int(.1 * M)]
-iloc = [int(.4 * M)]
-agents = init_agents(iloc, boundaries[0], boundaries[1])
+iloc = [int(.4 * M), int(.2 * M), int(.1 * M)]
+# iloc = [int(.4 * M)]
+agents = init_agents(iloc, boundaries[0])
 
 ######## Initial paths
 initial_steps = 80
-initial_steps = 3
-move_agents(agents, boundaries, from_t=2, to_t=initial_steps, vel=robot_speed)
+initial_steps = 5
+move_agents(agents, boundaries, from_t=1, to_t=initial_steps, vel=robot_speed)
 
 # Draw
 draw_initial_path(agents, boundaries, draw_paths=draw_paths)

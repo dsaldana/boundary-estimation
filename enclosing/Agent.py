@@ -6,15 +6,18 @@ from enclosing.path_joiner import perpendicular_line
 
 
 class Agent:
-    def __init__(self, (x1, y1), (x0, y0)):
+    def __init__(self, (x1, y1), theta=0.):
         # Location
         self.x, self.y = x1, y1
+        # orientation
+        self.theta = theta
+
         # Location in the curve
         self.s = None
 
         # Trajectory
-        self.traj_x = [x1, x0]
-        self.traj_y = [y1, y0]
+        self.traj_x = [x1]
+        self.traj_y = [y1]
         self.traj_t = []
         self.traj_s = []
 
@@ -38,16 +41,12 @@ class Agent:
         # plt.plot(p2[0], p2[1], 'x')
 
         # distance to the second last point
-        a1 = math.atan2((p1[1] - self.traj_y[-1]), (p1[0] - self.traj_x[-1]))
-        a2 = math.atan2((p2[1] - self.traj_y[-1]), (p2[0] - self.traj_x[-1]))
-
-        # path angle
-        a = math.atan2(self.traj_y[-1] - self.traj_y[-2],
-                       self.traj_x[-1] - self.traj_x[-2])
+        a1 = math.atan2((p1[1] - self.y), (p1[0] - self.x))
+        a2 = math.atan2((p2[1] - self.y), (p2[0] - self.x))
 
         ## convert to positive angles
-        d1 = abs(a % (2 * math.pi) - a1)
-        d2 = abs(a % (2 * math.pi) - a2)
+        d1 = abs(self.theta - a1)
+        d2 = abs(self.theta - a2)
 
         d1 = d1 if d1 < math.pi else abs(d1 - 2 * math.pi)
         d2 = d2 if d2 < math.pi else abs(d2 - 2 * math.pi)
@@ -60,3 +59,7 @@ class Agent:
 
         self.traj_x.append(nx[0])
         self.traj_y.append(ny[0])
+
+        # Orientation between 0 and 2pi
+        self.theta = math.atan2(self.traj_y[-1] - self.traj_y[-2],
+                                self.traj_x[-1] - self.traj_x[-2]) % (2 * math.pi)

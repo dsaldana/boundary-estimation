@@ -24,15 +24,23 @@ def boundaries_on_time(t_steps=500, vel=.01):
     boundaries = []
 
     for t in time:
-        x = np.cos(lin_theta) + vel * math.cos( .00*t) *2000 # + vel * t
+        x = np.cos(lin_theta) + vel * math.cos(.00 * t) * 2000  # + vel * t
         y = np.sin(lin_theta)  # + vel * t
         boundaries.append(np.vstack((x, y)).T)
 
     return np.array(boundaries)
 
 
-def init_agents(robot_locations, boundary0, boundary1):
-    agents = [Agent(boundary1[il - 1], boundary0[il]) for il in robot_locations]
+def init_agents(robot_locations, boundary0):
+    ang = lambda p1, p2: math.atan2((p2[1] - p1[1]), (p2[0] - p2[0]))
+
+    # Polygon orientation
+    sum_edges = sum([(x2 - x1) * (y2 + y1) for (x1, y1), (x2, y2) in zip(boundary0[:-1], boundary0[1:])])
+    counterclockwise = 1 if sum_edges > 0 else -1
+
+    # Robot starts in the specified location with orientation towards the next point
+    agents = [Agent(boundary0[il], ang(boundary0[il + counterclockwise * 2], boundary0[il]))
+              for il in robot_locations]
     return agents
 
 
