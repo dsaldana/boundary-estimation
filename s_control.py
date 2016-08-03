@@ -10,27 +10,32 @@ from enclosing.s_estimator import parametrize_polyset
 
 ############ Initial conditions ###############
 # Graphic Debug
-draw_paths = False
+draw_paths = True
 draw_init_polyset = False
 draw_polysets = True
 draw_arc = False
 
 # Compute boundaries
-#boundaries = boundaries_on_time(vel=.03)
-boundaries = boundaries_on_time(vel=.0)
+boundaries = boundaries_on_time(vel=.03)
+boundaries = np.load('boundaries.npy')
+# boundaries[0], boundaries[1] = boundaries[1], boundaries[0]
+robot_speed = 5.
 
 ## Creating agents
 # Initial locations
-#iloc = [int(.4 * M), int(.2 * M), int(.1 * M)]
 M = len(boundaries[0])
+# iloc = [int(.4 * M), int(.2 * M), int(.1 * M)]
 iloc = [int(.4 * M)]
 agents = init_agents(iloc, boundaries[0], boundaries[1])
 
 ######## Initial paths
 initial_steps = 80
-move_agents(agents, boundaries, from_t=2, to_t=initial_steps, vel=.1)
+initial_steps = 3
+move_agents(agents, boundaries, from_t=2, to_t=initial_steps, vel=robot_speed)
+
 # Draw
 draw_initial_path(agents, boundaries, draw_paths=draw_paths)
+plt.show()
 
 ###### Init piecewise boundary
 polyset, idz, zero_point, zero_line = polylines_to_pieceswise_boundary(agents, draw_perps=False,
@@ -49,7 +54,6 @@ update_s_locations(agents, ss, polyset)
 errors, polysets = move_along_boundary(agents, initial_steps, boundaries, (idz, zero_point, zero_line, polyset),
                                        running_steps=140)
 
-
 #############
 ### Get DATA
 ############
@@ -58,12 +62,9 @@ for a in agents:
     a.traj_x = a.traj_x[2:]
     a.traj_y = a.traj_y[2:]
 
-
-
 ## Dataset
 dataset = extract_dataset(agents)
 print dataset[1]
-
 
 print np.array(dataset).shape
 # Plot first polyset

@@ -24,8 +24,8 @@ def boundaries_on_time(t_steps=500, vel=.01):
     boundaries = []
 
     for t in time:
-        x = np.cos(lin_theta) + vel * t  # math.sin(vel * t)
-        y = np.sin(lin_theta) + vel * t
+        x = np.cos(lin_theta) + vel * math.cos( .00*t) *2000 # + vel * t
+        y = np.sin(lin_theta)  # + vel * t
         boundaries.append(np.vstack((x, y)).T)
 
     return np.array(boundaries)
@@ -154,19 +154,15 @@ def update_pieceswise_boundary(i, agent, id_zero, zero, zero_line, polyset, draw
     polyx.append(agent.x)
     polyy.append(agent.y)
 
-
     ### Point 2 should belong to this side
     polyset_zero_x, polyset_zero_y = polyset[id_zero[0]]
     p2 = polyset_zero_x[id_zero[1] - 1], polyset_zero_y[id_zero[1] - 1]
     p2_side = side_of_line(zero_line, p2)
 
-
     #### Remove old part
     # perpendicular line
     # Remove after the cut
     polyset[i - 1] = cut_polyline((agent.traj_x, agent.traj_y), polyset[i - 1])
-
-
 
     # Update zero perpendicular
     zero, id_zero, (zp1, zp2), polyset = update_zero(p2_side, zero, zero_line, polyset)

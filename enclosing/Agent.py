@@ -18,7 +18,6 @@ class Agent:
         self.traj_t = []
         self.traj_s = []
 
-
     def move_on_boundary(self, boundary, vel):
         pr = Point((self.x, self.y))  # point in robot location
         circle = pr.buffer(vel).boundary  # circle around robot location
@@ -27,8 +26,16 @@ class Agent:
 
         intersection = circle.intersection(boundary_polygon)
 
+        if intersection.is_empty:
+            raise ValueError('Robot slower than boundary. Robot=(%f, %f)' % (self.x, self.y))
+
         ## select from intersected points
         p1, p2 = np.array(intersection[0].xy), np.array(intersection[1].xy)
+
+        # import matplotlib.pylab as plt
+        # print p1
+        # plt.plot(p1[0], p1[1], 'x')
+        # plt.plot(p2[0], p2[1], 'x')
 
         # distance to the second last point
         a1 = math.atan2((p1[1] - self.traj_y[-1]), (p1[0] - self.traj_x[-1]))
@@ -53,5 +60,3 @@ class Agent:
 
         self.traj_x.append(nx[0])
         self.traj_y.append(ny[0])
-
-
