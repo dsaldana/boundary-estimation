@@ -10,7 +10,7 @@ from enclosing.s_estimator import parametrize_polyset
 
 ############ Initial conditions ###############
 # Graphic Debug
-draw_paths = True
+draw_paths = False
 draw_init_polyset = True
 draw_polysets = True
 draw_arc = False
@@ -20,7 +20,7 @@ draw_arc = False
 # robot_speed = .2
 
 boundaries = np.load('boundaries.npy')
-robot_speed = 4.
+robot_speed = 2.
 
 
 ## Creating agents

@@ -115,7 +115,7 @@ def polylines_to_pieceswise_boundary(agents, draw_perps=False, draw_init_polyset
     # draw
     if draw_init_polyset:
         for (polyx, polyy) in polyset:
-            plt.plot(polyx, polyy, 'b.-')
+            plt.plot(polyx, polyy, '.-')
             plt.plot(zero[0], zero[1], 'x')
             # Zero perpendicular
             # plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')

@@ -1,10 +1,15 @@
-from shapely.geometry import LineString, MultiLineString
+from shapely.geometry import LineString, MultiLineString, Point
 
 from enclosing.path_joiner import perpendicular_line, side_of_line, euclidean_distance
 import matplotlib.pyplot as plt
 
 
 def identify_cut((tx, ty), polyline):
+    """
+
+    :param polyline:
+    :return:
+    """
     # normal vector for robot i
     perp_line = get_perpendicular(tx, ty)
 
@@ -12,7 +17,6 @@ def identify_cut((tx, ty), polyline):
     # plt.plot([perp_line[0][0], perp_line[1][0]], [perp_line[0][1], perp_line[1][1]])
     # plt.plot(polyline[0], polyline[1], 'o')
     # plt.show()
-
 
     # Last linestring from robot im1
     oldp_x, oldp_y = polyline
@@ -55,13 +59,39 @@ def get_perpendicular(tx, ty, delta=100000000):
 
 
 def cut_polyline((tx, ty), polyline):
-    j = identify_cut((tx, ty), polyline)
-    if j is None:
-        raise ValueError('Error: no intersection between path and polyline')
+    #### Using perpendicular line
+    # j = identify_cut((tx, ty), polyline)
+    # if j is None:
+    #     raise ValueError('Error: no intersection between path and polyline')
+    #
+    # # Point of the intersection
+    # pline = get_perpendicular(tx, ty)
+    # new_p = compute_intersection(j, polyline, pline)
 
-    # Point of the intersection
-    pline = get_perpendicular(tx, ty)
-    new_p = compute_intersection(j, polyline, pline)
+    #### using closest point
+    p = Point(tx[-1], ty[-1])
+    ls = LineString([(xi, yi) for xi, yi in zip(polyline[0], polyline[1])])
+    closest_point = ls.interpolate(ls.project(p))
+    nx, ny = closest_point.xy
+    new_p = nx[0], ny[0]
+
+    oldp_x, oldp_y = polyline
+    print '--------'
+    for j in range(len(oldp_x) - 2, 0, -1):
+        p1 = oldp_x[j], oldp_y[j]
+        p2 = oldp_x[j - 1], oldp_y[j - 1]
+        p1, p2 = Point(p1), Point(p2)
+        print ls.project(p1), ls.project(p2), ls.project(p)
+
+        if ls.project(p2) <= ls.project(p) <= ls.project(p1):
+            break
+            # lsj = LineString([p1, p2])
+            # print j, lsj.project(closest_point)
+            # if lsj.project(closest_point)==0:
+            #     break
+    else:
+        raise ValueError('Error: no intersection with closest point')
+
     # New polyline after cut
     new_poly = [[new_p[0]] + polyline[0][j:], [new_p[1]] + polyline[1][j:]]
     return new_poly
