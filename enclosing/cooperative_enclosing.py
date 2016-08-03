@@ -24,22 +24,28 @@ def boundaries_on_time(t_steps=500, vel=.01):
     boundaries = []
 
     for t in time:
-        x = np.cos(lin_theta) + vel * math.cos(.00 * t) * 2000  # + vel * t
-        y = np.sin(lin_theta)  # + vel * t
+        x = np.cos(lin_theta) + vel * t  # + vel * math.cos(0.01 * t) * 2000  #
+        y = np.sin(lin_theta) + vel * t
         boundaries.append(np.vstack((x, y)).T)
 
     return np.array(boundaries)
 
 
 def init_agents(robot_locations, boundary0):
-    ang = lambda p1, p2: math.atan2((p2[1] - p1[1]), (p2[0] - p2[0]))
+    ang = lambda p1, p2: math.atan2((p2[1] - p1[1]), (p2[0] - p1[0]))
+
+    # def ang(p1, p2):
+    #     a= math.atan2((p2[1] - p1[1]), (p2[0] - p1[0]))
+    #     print p1, p2, a
+    #     return a
+
 
     # Polygon orientation
-    sum_edges = sum([(x2 - x1) * (y2 + y1) for (x1, y1), (x2, y2) in zip(boundary0[:-1], boundary0[1:])])
-    counterclockwise = 1 if sum_edges > 0 else -1
+    # sum_edges = sum([(x2 - x1) * (y2 + y1) for (x1, y1), (x2, y2) in zip(boundary0[:-1], boundary0[1:])])
+    # counterclockwise = 1 if sum_edges > 0 else -1
 
     # Robot starts in the specified location with orientation towards the next point
-    agents = [Agent(boundary0[il], ang(boundary0[il + counterclockwise * 2], boundary0[il]))
+    agents = [Agent(boundary0[il], ang(boundary0[il - 1], boundary0[il]))
               for il in robot_locations]
     return agents
 
@@ -97,8 +103,8 @@ def polylines_to_pieceswise_boundary(agents, draw_perps=False, draw_init_polyset
         if draw_perps:
             (p1, p2) = get_perpendicular(tx, ty)
             plt.plot([p1[0], p2[0]], [p1[1], p2[1]], '-')
-            plt.xlim([-1.5, 2])
-            plt.ylim([-1.5, 1.5])
+            # plt.xlim([-1.5, 2])
+            # plt.ylim([-1.5, 1.5])
 
     ## Zero point
     ztx, zty = polyset[0][0], polyset[0][1]  # path robot 0
@@ -112,10 +118,10 @@ def polylines_to_pieceswise_boundary(agents, draw_perps=False, draw_init_polyset
             plt.plot(polyx, polyy, 'b.-')
             plt.plot(zero[0], zero[1], 'x')
             # Zero perpendicular
-            plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')
-            plt.xlim([-1.5, 2])  # FIXME static
-            plt.ylim([-1.5, 1.5])
-            # plt.show()
+            # plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')
+            # plt.xlim([-1.5, 2])  # FIXME static
+            # plt.ylim([-1.5, 1.5])
+        plt.show()
     return polyset, idz, zero, (zp1, zp2)
 
 
@@ -189,7 +195,7 @@ def update_pieceswise_boundary(i, agent, id_zero, zero, zero_line, polyset, draw
     return polyset, id_zero, zero, (zp1, zp2)
 
 
-def vel_control(i, agents, ke=.4, min_vel=0.05):
+def vel_control(i, agents, ke=.4, min_vel=0.05, robot_speed=.2):
     N = len(agents)
     a = agents[i]
 
@@ -206,7 +212,7 @@ def vel_control(i, agents, ke=.4, min_vel=0.05):
         aver += .5
 
     e = (aver - a.s)
-    vel = .2 + ke * e
+    vel = robot_speed + ke * e
 
     if vel < min_vel:
         vel = min_vel
@@ -239,7 +245,7 @@ def arc_lenght(boundary):
 
 
 def move_along_boundary(agents, initial_steps, boundaries, (id_zero, zero_point, zero_line, polyset), running_steps=140,
-                        p_gain=.4):
+                        p_gain=.4, robot_speed=.2):
     N = len(agents)
     errors = []
     polysets = []
@@ -247,13 +253,13 @@ def move_along_boundary(agents, initial_steps, boundaries, (id_zero, zero_point,
     # Move the boundary
     for k in range(running_steps):
         boundary = boundaries[initial_steps + k]
-
+        print k
         # For each agent
         single_error = []
         for i in range(N):
             a = agents[i]
 
-            vel, e = vel_control(i, agents, ke=p_gain)
+            vel, e = vel_control(i, agents, ke=p_gain, robot_speed=robot_speed)
             a.move_on_boundary(boundary, vel)
 
             single_error.append(e)

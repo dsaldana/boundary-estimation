@@ -11,7 +11,6 @@ class Agent:
         self.x, self.y = x1, y1
         # orientation
         self.theta = theta
-
         # Location in the curve
         self.s = None
 
