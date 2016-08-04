@@ -77,7 +77,7 @@ def cut_polyline((tx, ty), polyline):
     new_p = nx[0], ny[0]
     print '-----'
     oldp_x, oldp_y = polyline
-    for j in range(len(oldp_x) - 2, 0, -1):
+    for j in range(len(oldp_x) - 1, 0, -1):
         p1 = oldp_x[j], oldp_y[j]
         p2 = oldp_x[j - 1], oldp_y[j - 1]
         p1, p2 = Point(p1), Point(p2)
