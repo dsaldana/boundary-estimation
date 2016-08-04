@@ -10,17 +10,17 @@ from enclosing.s_estimator import parametrize_polyset
 
 ############ Initial conditions ###############
 # Graphic Debug
-draw_paths = False
+draw_paths = True
 draw_init_polyset = True
 draw_polysets = True
-draw_arc = False
+draw_arc = True
 
 # Compute boundaries
 # boundaries = boundaries_on_time(vel=.01)
 # robot_speed = .2
 
 boundaries = np.load('boundaries.npy')
-robot_speed = 2.
+robot_speed = 6.
 
 
 ## Creating agents
@@ -55,7 +55,7 @@ update_s_locations(agents, ss, polyset)
 # Move robots along the boundary
 ###############
 errors, polysets = move_along_boundary(agents, initial_steps, boundaries, (idz, zero_point, zero_line, polyset),
-                                       running_steps=140, robot_speed=2*robot_speed)
+                                       running_steps=300, robot_speed=2*robot_speed)
 
 #############
 ### Get DATA

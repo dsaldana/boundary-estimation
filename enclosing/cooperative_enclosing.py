@@ -253,6 +253,7 @@ def move_along_boundary(agents, initial_steps, boundaries, (id_zero, zero_point,
     # Move the boundary
     for k in range(running_steps):
         boundary = boundaries[initial_steps + k]
+        print k
         # For each agent
         single_error = []
         for i in range(N):

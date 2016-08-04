@@ -71,19 +71,30 @@ def cut_polyline((tx, ty), polyline):
     #### using closest point
     p = Point(tx[-1], ty[-1])
     ls = LineString([(xi, yi) for xi, yi in zip(polyline[0], polyline[1])])
-    dp = ls.project(p)
-    closest_point = ls.interpolate(dp)
+    closest_point = ls.interpolate(ls.project(p))
+
     nx, ny = closest_point.xy
     new_p = nx[0], ny[0]
-
+    print '-----'
     oldp_x, oldp_y = polyline
     for j in range(len(oldp_x) - 2, 0, -1):
         p1 = oldp_x[j], oldp_y[j]
         p2 = oldp_x[j - 1], oldp_y[j - 1]
         p1, p2 = Point(p1), Point(p2)
 
-        if ls.project(p2) <= dp <= ls.project(p1):
+        p3 = Point(closest_point)
+        d12 = p1.distance(p2)
+        d13 = p1.distance(p3)
+        d32 = p3.distance(p2)
+
+        print d13, d32, d12, d13 + d32 - d12
+        if d13 + d32 - d12 < .0001:
             break
+
+            # dp = ls.project(p1.distance(p2))
+            # print ls.project(p2) , dp ,ls.project(p1)
+            # if ls.project(p2) <= dp <= ls.project(p1):
+            #     break
     else:
         raise ValueError('Error: no intersection with closest point')
 
