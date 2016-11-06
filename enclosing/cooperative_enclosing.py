@@ -244,8 +244,9 @@ def arc_lenght(boundary):
 #
 
 
-def move_along_boundary(agents, initial_steps, boundaries, (id_zero, zero_point, zero_line, polyset), running_steps=140,
+def move_along_boundary(agents, initial_steps, boundaries, zeropath, running_steps=140,
                         p_gain=.4, robot_speed=.2):
+    (id_zero, zero_point, zero_line, polyset) = zeropath
     N = len(agents)
     errors = []
     polysets = []
@@ -253,7 +254,7 @@ def move_along_boundary(agents, initial_steps, boundaries, (id_zero, zero_point,
     # Move the boundary
     for k in range(running_steps):
         boundary = boundaries[initial_steps + k]
-        print k
+        # print k
         # For each agent
         single_error = []
         for i in range(N):

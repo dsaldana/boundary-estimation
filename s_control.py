@@ -67,9 +67,9 @@ for a in agents:
 
 ## Dataset
 dataset = extract_dataset(agents)
-print dataset[1]
+# print dataset[1]
 
-print np.array(dataset).shape
+# print np.array(dataset).shape
 # Plot first polyset
 # for i in range(N):
 #     plt.plot(polysets[0][i][0], polysets[0][i][1])

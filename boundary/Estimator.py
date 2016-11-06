@@ -1,9 +1,9 @@
 import math
 from sympy import lambdify, var
 
-from util.anomaly_common import theta, t, anomaly_h
+from boundary.util.anomaly_common import theta, t, anomaly_h
 from dataset import D
-from util.regression import create_h
+from boundary.util.regression import create_h
 import numpy as np
 from numpy.linalg import inv
 import matplotlib.pyplot as plt
@@ -23,6 +23,15 @@ class Estimator(object):
         self.std = None  # Standard deviation
 
     def initial_estimation(self, t_path, s_path, xx, yy):
+        
+
+        """
+        Uses the initial dataset composed by a location x,y, its parameter s, and the time
+        :param t_path: (array) time of the sample
+        :param s_path: (array)  parameter of the curve
+        :param xx: (array) x coordinates
+        :param yy: (array) y coordinates
+        """
         # Design matrix
         A = [[h1(th1, t1) for h1 in self.lh] for th1, t1 in zip(s_path, t_path)]
 
@@ -220,17 +229,17 @@ var_s = estimator.get_variance(time[-1], lin_s0)
 
 
 #plt.plot(x1, y1,  label='$\gamma$')  # Real
-plt.plot(x1, y1, 'y', linewidth=2, label='$\hat\gamma$')  #Estimation
+# plt.plot(x1, y1, 'y', linewidth=2, label='$\hat\gamma$')  #Estimation
+#
+# plt.legend()
+#
+# # Uncertainty
+# fig = plt.gcf()
 
-plt.legend()
-
-# Uncertainty
-fig = plt.gcf()
-
-for xi, yi, epi in zip(x1, y1, var_s):
-    circle1=plt.Circle((xi,yi), 2*math.sqrt(epi), color='g')
-    fig.gca().add_artist(circle1)
+# for xi, yi, epi in zip(x1, y1, var_s):
+#     circle1=plt.Circle((xi,yi), 2*math.sqrt(epi), color='g')
+#     fig.gca().add_artist(circle1)
 
 # Last robot location
-plt.plot(xx[-1], yy[-1], 'rv')
-plt.show()
+# plt.plot(xx[-1], yy[-1], 'rv')
+# plt.show()

@@ -4,12 +4,13 @@ from enclosing.path_joiner import perpendicular_line, side_of_line, euclidean_di
 import matplotlib.pyplot as plt
 
 
-def identify_cut((tx, ty), polyline):
+def identify_cut(tanxy, polyline):
     """
 
     :param polyline:
     :return:
     """
+    (tx, ty) = tanxy
     # normal vector for robot i
     perp_line = get_perpendicular(tx, ty)
 
@@ -58,7 +59,7 @@ def get_perpendicular(tx, ty, delta=100000000):
     return p1, p2
 
 
-def cut_polyline((tx, ty), polyline):
+def cut_polyline(tanxy, polyline):
     #### Using perpendicular line
     # j = identify_cut((tx, ty), polyline)
     # if j is None:
@@ -67,7 +68,7 @@ def cut_polyline((tx, ty), polyline):
     # # Point of the intersection
     # pline = get_perpendicular(tx, ty)
     # new_p = compute_intersection(j, polyline, pline)
-
+    tanxy = (tx, ty)
     #### using closest point
     p = Point(tx[-1], ty[-1])
     ls = LineString([(xi, yi) for xi, yi in zip(polyline[0], polyline[1])])
@@ -75,7 +76,7 @@ def cut_polyline((tx, ty), polyline):
 
     nx, ny = closest_point.xy
     new_p = nx[0], ny[0]
-    print '-----'
+    # print '-----'
     oldp_x, oldp_y = polyline
     for j in range(len(oldp_x) - 1, 0, -1):
         p1 = oldp_x[j], oldp_y[j]
@@ -87,7 +88,7 @@ def cut_polyline((tx, ty), polyline):
         d13 = p1.distance(p3)
         d32 = p3.distance(p2)
 
-        print d13, d32, d12, d13 + d32 - d12
+        # print d13, d32, d12, d13 + d32 - d12
         if d13 + d32 - d12 < .0001:
             break
 
@@ -103,12 +104,13 @@ def cut_polyline((tx, ty), polyline):
     return new_poly
 
 
-def compute_intersection(i, (polyx, polyy), perp_line):
+def compute_intersection(i, polyxy, perp_line):
     """
     new point in the intersection.
     It creates a perpendicular line from the i-point in path.
     and returns the intersection between the perpendicular and the path.
     """
+    (polyx, polyy) = polyxy
     ########## Intersection point #########
     # segment of interest.
     seg = LineString([(polyx[i], polyy[i]),
@@ -131,10 +133,10 @@ def compute_intersection(i, (polyx, polyy), perp_line):
     elif inter.type == 'MultiPoint':
         intersection = inter[0].coords[0]
     elif inter.type == 'GeometryCollection':
-        print "---NO INTERSECTION "  # , [path[i], path[i - 1]], i
+        print( "---NO INTERSECTION ")  # , [path[i], path[i - 1]], i
         # intersection = inter[0].coords[0]
     else:
-        print "Unknown type", inter.type
+        print ("Unknown type", inter.type)
 
     return intersection
 
@@ -167,7 +169,7 @@ def update_zero(p2_side, zero, perp_line, polyset):
     # Identify the intersection between the perpendicular line and the polyset part
     min_d = 10000000  # Minimum distance
     id_c = None
-    c = None  # Candiate point
+    c = None  # Candidate point
     for i, polyline in enumerate(polyset):
         j = identify_intersection(p2_side, perp_line, polyline)
         if j is not None:

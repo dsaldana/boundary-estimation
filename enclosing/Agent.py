@@ -6,7 +6,8 @@ from enclosing.path_joiner import perpendicular_line
 
 
 class Agent:
-    def __init__(self, (x1, y1), theta=0.):
+    def __init__(self, loc, theta=0.):
+        (x1, y1) = loc
         # Location
         self.x, self.y = x1, y1
         # orientation

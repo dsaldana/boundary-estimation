@@ -38,8 +38,8 @@ def polyline_closes_perpend(points):
     :param points: array of objects of PointX
     :param ddd: distance to the fist point ddd>0.
     :return -1 if do not close, or i if close in point i.
-    
-           
+
+
     1. create a perpendicular line to the tangent of the anomaly.
     2. use the line l to devide the workspace in two areas A and B.
      line from $A=(x_1,y_1)$ to $B=(x_2,y_2)$ a point $P=(x,y) $
@@ -135,7 +135,7 @@ def perpendicular_line(p1, p2, ddd=1):
 
 def new_data_path(i, path, atime):
     """
-    new point in the intersection. 
+    new point in the intersection.
     It creates a perpendicular line from the i-point in path.
     and returns the intersection between the perpendicular and the path.
     """
@@ -147,17 +147,17 @@ def new_data_path(i, path, atime):
     per_seg = LineString([p1, p2])
 
     inter = per_seg.intersection(seg)
-    ## intersection    
+    ## intersection
     if inter.type == 'Point':
         intersection = inter.coords[0]
     elif inter.type == 'MultiPoint':
         intersection = inter[0].coords[0]
     elif inter.type == 'GeometryCollection':
-        print "---NO INTERSECTION ", [path[i], path[i - 1]], i
+        print("---NO INTERSECTION ", [path[i], path[i - 1]], i)
         # intersection = inter[0].coords[0]
     else:
         intersection = None
-        print "Unknown type", inter.type
+        print ("Unknown type", inter.type)
 
     ######## Time ##########
     ## seg is divided in two elements: seg1 and seg2
@@ -213,7 +213,7 @@ def cutting_path(path, atime):
         npath = mpath[i:j].tolist() + npath
         ntime = mtime[i:j].tolist() + ntime
 
-        # curvature parameter    
+        # curvature parameter
         # end point is true only in the first case, the polygon cover the hole cycle.
         final_point = len(pol1) if not etheta else len(pol1) - 1  # 0 if first time,else -1
         # print i, final_point
