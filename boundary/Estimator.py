@@ -1,7 +1,8 @@
 import math
 
-from sympy import Matrix
-from sympy import lambdify, var, diff
+from sympy import lambdify, var, diff, Matrix
+from sympy.tensor.array import Array
+from sympy.vector import Vector
 
 from boundary.util.anomaly_common import theta, t, anomaly_h
 from dataset import D
@@ -16,7 +17,10 @@ class Estimator(object):
         self.M = M  # Parameters of the fourier series
         self.N = N  # Parameters of the polynomial
         self.h = create_h(M, N)  # Analytic Vector Function h
-        self.lh = [lambdify((theta, t), hi) for hi in self.h]  # Lambdified h
+        self.lh = lambdify((t, theta), [hi for hi in self.h], modules='numpy')  # Lambdified h
+        # derivative on time
+        # self.dh = diff(self.h, t)
+        # self.ldh = lambdify((theta, t), self.dh.T.tolist()[0], modules='numpy')
 
         # Variables for estimation
         self.P = None  # P matrix (with inverse)
@@ -25,8 +29,6 @@ class Estimator(object):
         self.std = None  # Standard deviation
 
     def initial_estimation(self, t_path, s_path, xx, yy):
-        
-
         """
         Uses the initial dataset composed by a location x,y, its parameter s, and the time
         :param t_path: (array) time of the sample
@@ -35,7 +37,7 @@ class Estimator(object):
         :param yy: (array) y coordinates
         """
         # Design matrix
-        A = [[h1(th1, t1) for h1 in self.lh] for th1, t1 in zip(s_path, t_path)]
+        A = np.vstack([self.lh(t1, th1) for th1, t1 in zip(s_path, t_path)])
 
         X = np.array(A)
         # Recursive matrix
@@ -53,13 +55,36 @@ class Estimator(object):
         # cycle_lin_s, e = self.get_bias(t_path, s_path, xx, yy)
         self.std = math.sqrt(1. / len(t_path)) * (e)
 
+    def initial_estimation2(self, t_path, s_path, zx, zy, dzx=None, dzy=None):
+        """
+        Uses the initial dataset composed by a location x,y, its parameter s, and the time.
+        It can also includes information about the movement of the point. the velocity is dzx, dzy.
 
-        # Bx = np.array(xx).T
-        # By = np.array(yy).T
-        #
-        # # Least squares
-        # self.bx, residualsx, rankx, singularsx = np.linalg.lstsq(A, Bx)
-        # self.by, residualsy, ranky, singularsy = np.linalg.lstsq(A, By)
+        :param t_path: (array) time of the sample
+        :param s_path: (array)  parameter of the curve
+        :param zx: (array) x coordinates
+        :param zy: (array) y coordinates
+        :param dzx: (array) velocity of zx.
+        :param dzy: (array) velocity of zy
+        """
+        # Design matrix
+        A = [[h1(t1, th1) for h1 in self.lh] for th1, t1 in zip(s_path, t_path)]
+
+        X = np.array(A)
+        # Recursive matrix
+        self.P = inv(np.dot(X.T, X))
+        # Recursive vector
+        self.qx = np.dot(X.T, zx)
+        self.qy = np.dot(X.T, zy)
+
+        # Standard deviation
+        estimation_x, estimation_y = self.get_estimation(t_path, s_path)  # Estimator \mu
+        ex = np.array(estimation_x) - np.array(zx)  # error x
+        ey = np.array(estimation_y) - np.array(zy)  # error y
+        e = np.sqrt(sum(ex ** 2) + sum(ey ** 2))
+
+        # cycle_lin_s, e = self.get_bias(t_path, s_path, xx, yy)
+        self.std = math.sqrt(1. / len(t_path)) * (e)
 
     def get_estimation_t(self, fixed_t, thetas):
         """
@@ -81,9 +106,10 @@ class Estimator(object):
         self.by = np.dot(self.P, self.qy)
 
         ## anomaly based on the least squares parameters
-        x2 = [np.sum([bi * hi(th1, ti) for bi, hi in zip(self.bx, self.lh)])
+        x2 = [np.sum([bi * hi for bi, hi in zip(self.bx, self.lh(ti, th1))])
               for ti, th1 in zip(times, lin_s)]
-        y2 = [np.sum([bi * hi(th1, ti) for bi, hi in zip(self.by, self.lh)])
+        # x21 = [np.dot(self.bx, self.lh(ti, th1)) for ti, th1 in zip(times, lin_s)]
+        y2 = [np.sum([bi * hi for bi, hi in zip(self.by, self.lh(ti, th1))])
               for ti, th1 in zip(times, lin_s)]
 
         return x2, y2
@@ -158,7 +184,7 @@ class Estimator(object):
         :param lin_s: lin space for s.
         """
         std2 = self.std ** 2  # TODO Compute iterative variance
-        
+
         epx = []
 
         for si in lin_s:
@@ -203,11 +229,7 @@ estimator.initial_estimation(time, atheta, xx, yy)
 # print estimator.std
 
 x1, y1 = estimator.get_estimation_t(100, np.linspace(0, 2 * math.pi, 100))
-# plt.plot(x1, y1)
-
-
-
-
+plt.plot(x1, y1)
 
 # plt.show()
 
@@ -262,7 +284,7 @@ var_s = estimator.get_variance(time[-1], lin_s0)
 
 
 
-#plt.plot(x1, y1,  label='$\gamma$')  # Real
+# plt.plot(x1, y1,  label='$\gamma$')  # Real
 # plt.plot(x1, y1, 'y', linewidth=2, label='$\hat\gamma$')  #Estimation
 #
 # plt.legend()
