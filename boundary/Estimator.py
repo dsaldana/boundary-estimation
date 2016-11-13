@@ -19,8 +19,8 @@ class Estimator(object):
         self.h = create_h(M, N)  # Analytic Vector Function h
         self.lh = lambdify((t, theta), [hi for hi in self.h], modules='numpy')  # Lambdified h
         # derivative on time
-        # self.dh = diff(self.h, t)
-        # self.ldh = lambdify((theta, t), self.dh.T.tolist()[0], modules='numpy')
+        self.dh = [diff(hi, t) for hi in self.h]
+        self.ldh = lambdify((t, theta), [hi for hi in self.dh], modules='numpy')  # Lambdified h
 
         # Variables for estimation
         self.P = None  # P matrix (with inverse)
@@ -28,34 +28,7 @@ class Estimator(object):
         self.bx, self.by = None, None  # Vector of weights
         self.std = None  # Standard deviation
 
-    def initial_estimation(self, t_path, s_path, xx, yy):
-        """
-        Uses the initial dataset composed by a location x,y, its parameter s, and the time
-        :param t_path: (array) time of the sample
-        :param s_path: (array)  parameter of the curve
-        :param xx: (array) x coordinates
-        :param yy: (array) y coordinates
-        """
-        # Design matrix
-        A = np.vstack([self.lh(t1, th1) for th1, t1 in zip(s_path, t_path)])
-
-        X = np.array(A)
-        # Recursive matrix
-        self.P = inv(np.dot(X.T, X))
-        # Recursive vector
-        self.qx = np.dot(X.T, xx)
-        self.qy = np.dot(X.T, yy)
-
-        # Standard deviation
-        estimation_x, estimation_y = self.get_estimation(t_path, s_path)  # Estimator \mu
-        ex = np.array(estimation_x) - np.array(xx)  # error x
-        ey = np.array(estimation_y) - np.array(yy)  # error y
-        e = np.sqrt(sum(ex ** 2) + sum(ey ** 2))
-
-        # cycle_lin_s, e = self.get_bias(t_path, s_path, xx, yy)
-        self.std = math.sqrt(1. / len(t_path)) * (e)
-
-    def initial_estimation2(self, t_path, s_path, zx, zy, dzx=None, dzy=None):
+    def initial_estimation(self, t_path, s_path, zx, zy, dx=None, dy=None):
         """
         Uses the initial dataset composed by a location x,y, its parameter s, and the time.
         It can also includes information about the movement of the point. the velocity is dzx, dzy.
@@ -68,23 +41,30 @@ class Estimator(object):
         :param dzy: (array) velocity of zy
         """
         # Design matrix
-        A = [[h1(t1, th1) for h1 in self.lh] for th1, t1 in zip(s_path, t_path)]
+        A = np.vstack([self.lh(t1, th1) for th1, t1 in zip(s_path, t_path)])
+
+        if dx is not None:
+            A = np.vstack((A, [self.ldh(t1, th1) for th1, t1 in zip(s_path, t_path)]))
 
         X = np.array(A)
         # Recursive matrix
         self.P = inv(np.dot(X.T, X))
         # Recursive vector
-        self.qx = np.dot(X.T, zx)
-        self.qy = np.dot(X.T, zy)
 
+
+        if dx is None:
+            self.qx = np.dot(X.T, xx)
+            self.qy = np.dot(X.T, yy)
+        else:
+            self.qx = np.dot(X.T, np.hstack((xx , dx)))
+            self.qy = np.dot(X.T, np.hstack((yy , dy)))
         # Standard deviation
-        estimation_x, estimation_y = self.get_estimation(t_path, s_path)  # Estimator \mu
-        ex = np.array(estimation_x) - np.array(zx)  # error x
-        ey = np.array(estimation_y) - np.array(zy)  # error y
-        e = np.sqrt(sum(ex ** 2) + sum(ey ** 2))
-
-        # cycle_lin_s, e = self.get_bias(t_path, s_path, xx, yy)
-        self.std = math.sqrt(1. / len(t_path)) * (e)
+        # estimation_x, estimation_y = self.get_estimation(t_path, s_path)  # Estimator \mu
+        # ex = np.array(estimation_x) - np.array(xx)  # error x
+        # ey = np.array(estimation_y) - np.array(yy)  # error y
+        # e = np.sqrt(sum(ex ** 2) + sum(ey ** 2))
+        #
+        # self.std = math.sqrt(1. / len(t_path)) * e
 
     def get_estimation_t(self, fixed_t, thetas):
         """
@@ -214,23 +194,22 @@ class Estimator(object):
 
         pass
 
-
 # fourier terms
 M = 10
 # polynomial degree
 N = 1
-(time, atheta, xx, yy) = D
+(time, atheta, xx, yy, dx, dy) = D
 
 (time, atheta, xx, yy) = (time[:], atheta[:], xx[:], yy[:])
 
 estimator = Estimator(N, M)
 
-estimator.initial_estimation(time, atheta, xx, yy)
+estimator.initial_estimation(time, atheta, xx, yy, dx, dy)
 # print estimator.std
 
-x1, y1 = estimator.get_estimation_t(100, np.linspace(0, 2 * math.pi, 100))
-plt.plot(x1, y1)
-
+# x1, y1 = estimator.get_estimation_t(100, np.linspace(0, 2 * math.pi, 50))
+# plt.plot(x1, y1)
+#
 # plt.show()
 
 # ## Test iterative
@@ -276,8 +255,8 @@ plt.plot(x1, y1)
 # plt.show()
 
 
-lin_s0 = np.linspace(0, 2 * math.pi, 100)
-var_s = estimator.get_variance(time[-1], lin_s0)
+# lin_s0 = np.linspace(0, 2 * math.pi, 100)
+# var_s = estimator.get_variance(time[-1], lin_s0)
 
 # plt.plot(lin_s0, var, 'o')
 # plt.show()
