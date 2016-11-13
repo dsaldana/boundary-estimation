@@ -1,5 +1,7 @@
 import math
-from sympy import lambdify, var
+
+from sympy import Matrix
+from sympy import lambdify, var, diff
 
 from boundary.util.anomaly_common import theta, t, anomaly_h
 from dataset import D
@@ -19,7 +21,7 @@ class Estimator(object):
         # Variables for estimation
         self.P = None  # P matrix (with inverse)
         self.qx, self.qy = None, None  # q vector for x and for y
-        self.bx, self.by = None, None  # Vector of parameters
+        self.bx, self.by = None, None  # Vector of weights
         self.std = None  # Standard deviation
 
     def initial_estimation(self, t_path, s_path, xx, yy):
@@ -86,6 +88,38 @@ class Estimator(object):
 
         return x2, y2
 
+    def get_tanget_t(self, fixed_t, thetas):
+        """
+        Get an estimation for a fixed time and different thetas
+        TODO: it was not tested properly
+        :param fixed_t:
+        :param thetas:
+        :return:
+        """
+        return self.get_tangent(fixed_t * np.ones(len(thetas)), thetas)
+
+    def get_tangent(self, times, lin_s):
+        """
+        Get an estimation for different times and different thetas (like a path).
+        TODO: it was not tested properly
+        :param times:
+        :param lin_s:
+        :return:
+        """
+        self.bx = np.dot(self.P, self.qx)
+        self.by = np.dot(self.P, self.qy)
+
+        dh = diff(Matrix(self.h), theta)
+        ldh = [lambdify((theta, t), hi) for hi in dh]
+
+        ## anomaly based on the least squares parameters
+        x2 = [np.sum([bi * hi(th1, ti) for bi, hi in zip(self.bx, ldh)])
+              for ti, th1 in zip(times, lin_s)]
+        y2 = [np.sum([bi * hi(th1, ti) for bi, hi in zip(self.by, ldh)])
+              for ti, th1 in zip(times, lin_s)]
+
+        return x2, y2
+
     def get_bias(self, times, lin_s, xx, yy):
         """
         Compute the bias based on the last cycle of the dataset.
@@ -124,7 +158,7 @@ class Estimator(object):
         :param lin_s: lin space for s.
         """
         std2 = self.std ** 2  # TODO Compute iterative variance
-
+        
         epx = []
 
         for si in lin_s:
