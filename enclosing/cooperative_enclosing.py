@@ -284,12 +284,13 @@ def move_along_boundary(agents, initial_steps, boundaries, zeropath, running_ste
 
 
 def extract_dataset(agents):
-    tt, th, xx, yy = [], [], [], []
+    tt, th, xx, yy, ids = [], [], [], [], []
     for i in range(len(agents[0].traj_s)):
-        for a in agents:
+        for id_agent, a in enumerate(agents):
+            ids.append(id_agent)
             tt.append(i)
             th.append(a.traj_s[i])
             xx.append(a.traj_x[i])
             yy.append(a.traj_y[i])
 
-    return tt, th, xx, yy
+    return tt, th, xx, yy, ids

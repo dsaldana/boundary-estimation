@@ -68,7 +68,7 @@ def cut_polyline(tanxy, polyline):
     # # Point of the intersection
     # pline = get_perpendicular(tx, ty)
     # new_p = compute_intersection(j, polyline, pline)
-    tanxy = (tx, ty)
+    (tx, ty) = tanxy
     #### using closest point
     p = Point(tx[-1], ty[-1])
     ls = LineString([(xi, yi) for xi, yi in zip(polyline[0], polyline[1])])

@@ -28,7 +28,7 @@ class Estimator(object):
         self.bx, self.by = None, None  # Vector of weights
         self.std = None  # Standard deviation
 
-    def initial_estimation(self, t_path, s_path, zx, zy, dx=None, dy=None):
+    def initial_estimation(self, t_path, s_path, xx, yy, dx=None, dy=None):
         """
         Uses the initial dataset composed by a location x,y, its parameter s, and the time.
         It can also includes information about the movement of the point. the velocity is dzx, dzy.
@@ -49,15 +49,16 @@ class Estimator(object):
         X = np.array(A)
         # Recursive matrix
         self.P = inv(np.dot(X.T, X))
+
         # Recursive vector
-
-
         if dx is None:
             self.qx = np.dot(X.T, xx)
             self.qy = np.dot(X.T, yy)
         else:
-            self.qx = np.dot(X.T, np.hstack((xx , dx)))
-            self.qy = np.dot(X.T, np.hstack((yy , dy)))
+            print(len(np.hstack((xx, dx))), len(xx), len(dx))
+            self.qx = np.dot(X.T, np.hstack((xx, dx)))
+            self.qy = np.dot(X.T, np.hstack((yy, dy)))
+
         # Standard deviation
         # estimation_x, estimation_y = self.get_estimation(t_path, s_path)  # Estimator \mu
         # ex = np.array(estimation_x) - np.array(xx)  # error x
@@ -193,6 +194,7 @@ class Estimator(object):
         self.qy = self.qy + y0 * hk1
 
         pass
+
 
 # fourier terms
 M = 10
