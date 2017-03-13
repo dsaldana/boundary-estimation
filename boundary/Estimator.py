@@ -193,7 +193,32 @@ class Estimator(object):
         self.qx = self.qx + x0 * hk1
         self.qy = self.qy + y0 * hk1
 
-        pass
+    def add_sample_point_forget(self, t0, s0, x0, y0, lambda_val):
+        """
+        Iterative least squares
+        :param t0:
+        :param s0:
+        :param x0:
+        :param y0:
+        """
+        hk1 = np.array([hi(s0, t0) for hi in self.lh])
+
+        # Lambda inverse
+        lambda_1 = 1. / lambda_val
+
+        # Matrix P times h
+        Ph = np.dot(self.P, hk1)
+        Ph.shape = (len(Ph), 1)
+
+
+        # g vector
+        g = Ph / (lambda_val + np.dot(hk1, Ph))
+
+        self.P = lambda_1 * self.P - lambda_1 * np.dot(g, np.dot(Ph, hk1).T)
+
+        # Vector q
+        self.qx = lambda_val * self.qx + x0 * hk1
+        self.qy = lambda_val * self.qy + y0 * hk1
 
 
 # fourier terms
