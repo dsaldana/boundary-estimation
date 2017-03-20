@@ -1,15 +1,13 @@
 import math
 
 from sympy import lambdify, var, diff, Matrix
-from sympy.tensor.array import Array
-from sympy.vector import Vector
 
 from boundary.util.anomaly_common import theta, t, anomaly_h
-from dataset import D
+
 from boundary.util.regression import create_h
 import numpy as np
 from numpy.linalg import inv
-import matplotlib.pyplot as plt
+
 
 
 class Estimator(object):
@@ -174,24 +172,24 @@ class Estimator(object):
             epx.append(epxi)
         return epx
 
-    def add_sample_point(self, t0, s0, x0, y0):
-        """
-        Iterative least squares
-        :param t0:
-        :param s0:
-        :param x0:
-        :param y0:
-        """
-        hk1 = np.array([hi(s0, t0) for hi in self.lh])
-
-        # Matrix P
-        Ph = np.dot(self.P, hk1)
-        Ph.shape = (len(Ph), 1)
-        self.P = self.P - np.dot(Ph, Ph.T) / (1 + np.dot(hk1, Ph))
-
-        # Vector q
-        self.qx = self.qx + x0 * hk1
-        self.qy = self.qy + y0 * hk1
+    # def add_sample_point(self, t0, s0, x0, y0):
+    #     """
+    #     Iterative least squares
+    #     :param t0:
+    #     :param s0:
+    #     :param x0:
+    #     :param y0:
+    #     """
+    #     hk1 = np.array([hi(s0, t0) for hi in self.lh])
+    #
+    #     # Matrix P
+    #     Ph = np.dot(self.P, hk1)
+    #     Ph.shape = (len(Ph), 1)
+    #     self.P = self.P - np.dot(Ph, Ph.T) / (1 + np.dot(hk1, Ph))
+    #
+    #     # Vector q
+    #     self.qx = self.qx + x0 * hk1
+    #     self.qy = self.qy + y0 * hk1
 
     def add_sample_point_forget(self, t0, s0, x0, y0, lambda_val):
         """
@@ -201,7 +199,8 @@ class Estimator(object):
         :param x0:
         :param y0:
         """
-        hk1 = np.array([hi(s0, t0) for hi in self.lh])
+        # hk1 = np.array([hi(s0, t0) for hi in self.lh])
+        hk1 = self.lh(t0, s0)
 
         # Lambda inverse
         lambda_1 = 1. / lambda_val
@@ -214,24 +213,38 @@ class Estimator(object):
         # g vector
         g = Ph / (lambda_val + np.dot(hk1, Ph))
 
-        self.P = lambda_1 * self.P - lambda_1 * np.dot(g, np.dot(Ph, hk1).T)
+
+        self.P = lambda_1 * self.P - lambda_1 * np.dot(g, Ph.T)
 
         # Vector q
-        self.qx = lambda_val * self.qx + x0 * hk1
-        self.qy = lambda_val * self.qy + y0 * hk1
+        self.qx = lambda_val * self.qx + x0 * np.array(hk1)
+        self.qy = lambda_val * self.qy + y0 * np.array(hk1)
 
 
-# fourier terms
-M = 10
-# polynomial degree
-N = 1
-(time, atheta, xx, yy, dx, dy) = D
+print "a"
 
-(time, atheta, xx, yy) = (time[:], atheta[:], xx[:], yy[:])
 
-estimator = Estimator(N, M)
 
-estimator.initial_estimation(time, atheta, xx, yy, dx, dy)
+
+
+# from sympy.tensor.array import Array
+# from sympy.vector import Vector
+# # from dataset import D
+# import matplotlib.pyplot as plt
+# # fourier terms
+# M = 10
+# # polynomial degree
+# N = 1
+# (time, atheta, xx, yy, dx, dy) = D
+#
+# (time, atheta, xx, yy) = (time[:], atheta[:], xx[:], yy[:])
+#
+# estimator = Estimator(N, M)
+#
+# estimator.initial_estimation(time, atheta, xx, yy, dx, dy)
+#
+#
+
 # print estimator.std
 
 # x1, y1 = estimator.get_estimation_t(100, np.linspace(0, 2 * math.pi, 50))
