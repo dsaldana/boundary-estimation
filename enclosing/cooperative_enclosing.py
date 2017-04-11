@@ -121,7 +121,7 @@ def polylines_to_pieceswise_boundary(agents, draw_perps=False, draw_init_polyset
             # plt.plot([zp1[0], zp2[0]], [zp1[1], zp2[1]], '-')
             # plt.xlim([-1.5, 2])  # FIXME static
             # plt.ylim([-1.5, 1.5])
-        # plt.show()
+            # plt.show()
     return polyset, idz, zero, (zp1, zp2)
 
 

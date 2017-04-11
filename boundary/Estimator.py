@@ -221,7 +221,6 @@ class Estimator(object):
         self.qy = lambda_val * self.qy + y0 * np.array(hk1)
 
 
-print "a"
 
 
 
